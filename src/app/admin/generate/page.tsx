@@ -1,7 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useState } from 'react';
 import AuthGuard, { clearAdminAuth } from '@/app/_components/AuthGuard';
 import CertificateA from '@/app/_components/CertificateA';
 import CertificateB from '@/app/_components/CertificateB';
@@ -27,7 +26,6 @@ const COURSES: Record<CertType, string[]> = {
 
 export default function GeneratePage() {
   const router = useRouter();
-  const certificateRef = useRef<HTMLDivElement>(null);
 
   const [certType, setCertType] = useState<CertType>('completion');
   const [cohort, setCohort] = useState('');
@@ -65,21 +63,24 @@ export default function GeneratePage() {
     setError('');
   }
 
-  const handlePrint = useReactToPrint({
-    contentRef: certificateRef,
-    documentTitle: `Metabridge-Certificate-${liveCode || generatedCode}`,
-    pageStyle: `
-      @page {
-        size: A4 landscape;
-        margin: 0;
-      }
-      @media print {
-        body { margin: 0; padding: 0; }
-        * { -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important; }
-      }
-    `,
-  });
+  function doPrint() {
+    const cert = document.getElementById('certificate-print-area');
+    if (!cert) {
+      alert('Certificate not found. Make sure id="certificate-print-area" is on the certificate wrapper div.');
+      return;
+    }
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write('<html><head><style>');
+    w.document.write('@page{size:A4 landscape;margin:0}');
+    w.document.write('body{margin:0;padding:0}');
+    w.document.write('*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}');
+    w.document.write('</style></head><body>');
+    w.document.write(cert.innerHTML);
+    w.document.write('</body></html>');
+    w.document.close();
+    setTimeout(() => { w.print(); }, 800);
+  }
 
   async function handleGenerate() {
     if (!cohort.trim()) {
@@ -140,7 +141,7 @@ export default function GeneratePage() {
 
       // Small delay so success state renders before print dialog opens
       await new Promise((r) => setTimeout(r, 200));
-      handlePrint();
+      doPrint();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong.';
       setError(`Error: ${msg}`);
@@ -199,7 +200,24 @@ export default function GeneratePage() {
             </p>
             <div className="flex gap-3 flex-wrap">
               <button
-                onClick={handlePrint}
+                onClick={() => {
+                  const cert = document.getElementById('certificate-print-area');
+                  if (!cert) {
+                    alert('Certificate not found. Make sure id="certificate-print-area" is on the certificate wrapper div.');
+                    return;
+                  }
+                  const w = window.open('', '_blank');
+                  if (!w) return;
+                  w.document.write('<html><head><style>');
+                  w.document.write('@page{size:A4 landscape;margin:0}');
+                  w.document.write('body{margin:0;padding:0}');
+                  w.document.write('*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}');
+                  w.document.write('</style></head><body>');
+                  w.document.write(cert.innerHTML);
+                  w.document.write('</body></html>');
+                  w.document.close();
+                  setTimeout(() => { w.print(); }, 800);
+                }}
                 className="bg-navy text-white px-5 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition"
               >
                 Download / Print Certificate
@@ -403,9 +421,9 @@ export default function GeneratePage() {
         </div>
       </main>
 
-      {/* ── FULL-SIZE CERTIFICATE FOR PRINTING ── react-to-print targets this ref */}
-      <div style={{ display: 'none' }}>
-        <div ref={certificateRef}>
+      {/* ── FULL-SIZE CERTIFICATE FOR PRINTING ── innerHTML cloned into popup window */}
+      <div style={{ visibility: 'hidden', position: 'absolute', top: 0, left: -9999 }}>
+        <div id="certificate-print-area">
           {certType === 'completion' ? (
             <CertificateA {...certProps} />
           ) : (
