@@ -55,7 +55,6 @@ export default function GeneratePage() {
   const dateIssued = getDateIssued();
 
   const [certificateCode, setCertificateCode] = useState('');
-  const [qrDataUrl, setQrDataUrl] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [error, setError] = useState('');
@@ -65,7 +64,6 @@ export default function GeneratePage() {
     setCertType(val);
     setCourseName('');
     setCertificateCode('');
-    setQrDataUrl('');
     setIsGenerated(false);
   }
 
@@ -75,7 +73,6 @@ export default function GeneratePage() {
     setCourseName('');
     setCandidateName('');
     setCertificateCode('');
-    setQrDataUrl('');
     setIsGenerated(false);
     setError('');
   }
@@ -97,23 +94,10 @@ export default function GeneratePage() {
       const serial = await getNextSerial(cohort);
       const code = buildCertificateCode(cohort, year, serial);
 
-      // Generate QR code data URI before rendering to DOM
-      const QRCode = await import('qrcode');
-      const verifyUrl = `${window.location.origin}/verify/${encodeURIComponent(code)}`;
-      const qr = await QRCode.default.toDataURL(verifyUrl, {
-        width: 160,
-        margin: 1,
-        color: {
-          dark: '#1B2A4A',
-          light: certType === 'achievement' ? '#F7F9FC' : '#FFFFFF',
-        },
-      });
-
       setCertificateCode(code);
-      setQrDataUrl(qr);
 
-      // Small delay to let React re-render the certificate with QR before capture
-      await new Promise((r) => setTimeout(r, 300));
+      // Wait for the child component's useEffect to generate the QR and re-render
+      await new Promise((r) => setTimeout(r, 700));
 
       // Save to Supabase
       await saveCertificate({
@@ -156,7 +140,6 @@ export default function GeneratePage() {
     courseName: courseName || 'Course Name',
     dateIssued,
     certificateCode,
-    qrDataUrl,
   };
 
   return (

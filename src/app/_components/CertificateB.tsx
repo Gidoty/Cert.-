@@ -1,13 +1,14 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
+import QRCode from 'qrcode';
 
 interface CertificateBProps {
   candidateName: string;
   courseName: string;
   dateIssued: string;
   certificateCode: string;
-  qrDataUrl: string;
   divRef?: RefObject<HTMLDivElement>;
 }
 
@@ -22,9 +23,21 @@ export default function CertificateB({
   courseName,
   dateIssued,
   certificateCode,
-  qrDataUrl,
   divRef,
 }: CertificateBProps) {
+  const [qrDataUrl, setQrDataUrl] = useState('');
+
+  useEffect(() => {
+    if (!certificateCode) return;
+    QRCode.toDataURL(
+      `https://metabridgeacademy.com/verify/${certificateCode}`,
+      {
+        margin: 1,
+        width: 100,
+        color: { dark: '#1B2A4A', light: '#FFFFFF' },
+      }
+    ).then((url) => setQrDataUrl(url));
+  }, [certificateCode]);
   return (
     <div
       ref={divRef}
