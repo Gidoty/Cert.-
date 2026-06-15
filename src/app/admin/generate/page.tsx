@@ -63,25 +63,6 @@ export default function GeneratePage() {
     setError('');
   }
 
-  function doPrint() {
-    const cert = document.getElementById('certificate-print-area');
-    if (!cert) {
-      alert('Certificate not found. Make sure id="certificate-print-area" is on the certificate wrapper div.');
-      return;
-    }
-    const w = window.open('', '_blank');
-    if (!w) return;
-    w.document.write('<html><head><style>');
-    w.document.write('@page{size:A4 landscape;margin:0}');
-    w.document.write('body{margin:0;padding:0}');
-    w.document.write('*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}');
-    w.document.write('</style></head><body>');
-    w.document.write(cert.innerHTML);
-    w.document.write('</body></html>');
-    w.document.close();
-    setTimeout(() => { w.print(); }, 800);
-  }
-
   async function handleGenerate() {
     if (!cohort.trim()) {
       setError('Please enter the cohort (e.g. CO1).');
@@ -108,45 +89,32 @@ export default function GeneratePage() {
     setError('');
     setIsGenerating(true);
 
-    try {
-      // ── Duplicate check ──
-      const isDuplicate = await checkDuplicateCode(code);
-      if (isDuplicate) {
-        setError(
-          `⚠️ Certificate code ${code} already exists. Please use a different serial number.`
-        );
-        setIsGenerating(false);
-        return;
-      }
-
-      const parsedSerial = parseInt(serialNumber.replace(/^0+/, '') || '0', 10);
-
-      await saveCertificate({
-        certificate_code: code,
-        certificate_type:
-          certType === 'completion'
-            ? 'Certificate of Completion'
-            : 'Certificate of Achievement',
-        candidate_name: candidateName.trim(),
-        course_name: courseName,
-        cohort: cohort.trim(),
-        serial_number: parsedSerial,
-        year_issued: new Date().getFullYear(),
-        date_issued: dateIssued.trim(),
-      });
-
-      setGeneratedCode(code);
-      setIsGenerated(true);
+    const isDuplicate = await checkDuplicateCode(code);
+    if (isDuplicate) {
+      setError(`⚠️ Certificate code ${code} already exists. Please use a different serial number.`);
       setIsGenerating(false);
-
-      // Small delay so success state renders before print dialog opens
-      await new Promise((r) => setTimeout(r, 200));
-      doPrint();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Something went wrong.';
-      setError(`Error: ${msg}`);
-      setIsGenerating(false);
+      return;
     }
+
+    const parsedSerial = parseInt(serialNumber.replace(/^0+/, '') || '0', 10);
+
+    await saveCertificate({
+      certificate_code: code,
+      certificate_type:
+        certType === 'completion'
+          ? 'Certificate of Completion'
+          : 'Certificate of Achievement',
+      candidate_name: candidateName.trim(),
+      course_name: courseName,
+      cohort: cohort.trim(),
+      serial_number: parsedSerial,
+      year_issued: new Date().getFullYear(),
+      date_issued: dateIssued.trim(),
+    });
+
+    setGeneratedCode(code);
+    setIsGenerated(true);
+    setIsGenerating(false);
   }
 
   function handleLogout() {
@@ -201,22 +169,25 @@ export default function GeneratePage() {
             <div className="flex gap-3 flex-wrap">
               <button
                 onClick={() => {
-                  const cert = document.getElementById('certificate-print-area');
-                  if (!cert) {
-                    alert('Certificate not found. Make sure id="certificate-print-area" is on the certificate wrapper div.');
-                    return;
-                  }
-                  const w = window.open('', '_blank');
-                  if (!w) return;
-                  w.document.write('<html><head><style>');
-                  w.document.write('@page{size:A4 landscape;margin:0}');
-                  w.document.write('body{margin:0;padding:0}');
-                  w.document.write('*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}');
-                  w.document.write('</style></head><body>');
-                  w.document.write(cert.innerHTML);
-                  w.document.write('</body></html>');
-                  w.document.close();
-                  setTimeout(() => { w.print(); }, 800);
+                  const cert = document.getElementById('certificate-print-area')
+                  if (!cert) { alert('Please fill all fields first'); return }
+                  const w = window.open('', '_blank')
+                  w!.document.write(`
+                    <html>
+                    <head>
+                    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+                    <style>
+                      @page { size: A4 landscape; margin: 0; }
+                      body { margin: 0; padding: 0; }
+                      * { -webkit-print-color-adjust: exact !important;
+                          print-color-adjust: exact !important; }
+                    </style>
+                    </head>
+                    <body>${cert.outerHTML}</body>
+                    </html>
+                  `)
+                  w!.document.close()
+                  setTimeout(() => { w!.focus(); w!.print() }, 1500)
                 }}
                 className="bg-navy text-white px-5 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition"
               >
@@ -272,7 +243,7 @@ export default function GeneratePage() {
                 />
               </div>
 
-              {/* Date of Issue — placed here so yy is available for the prefix below */}
+              {/* Date of Issue */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
                   Date of Issue
@@ -380,9 +351,35 @@ export default function GeneratePage() {
                   disabled={isGenerating}
                   className="flex-1 bg-navy text-white py-3 rounded-lg font-semibold hover:opacity-90 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isGenerating ? 'Saving...' : 'Download / Print Certificate'}
+                  {isGenerating ? 'Saving...' : 'Save Certificate'}
                 </button>
               </div>
+              <button
+                onClick={() => {
+                  const cert = document.getElementById('certificate-print-area')
+                  if (!cert) { alert('Please fill all fields first'); return }
+                  const w = window.open('', '_blank')
+                  w!.document.write(`
+                    <html>
+                    <head>
+                    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+                    <style>
+                      @page { size: A4 landscape; margin: 0; }
+                      body { margin: 0; padding: 0; }
+                      * { -webkit-print-color-adjust: exact !important;
+                          print-color-adjust: exact !important; }
+                    </style>
+                    </head>
+                    <body>${cert.outerHTML}</body>
+                    </html>
+                  `)
+                  w!.document.close()
+                  setTimeout(() => { w!.focus(); w!.print() }, 1500)
+                }}
+                className="w-full bg-teal text-white py-3 rounded-lg font-semibold hover:opacity-90 transition text-sm"
+              >
+                Download / Print Certificate
+              </button>
               <button
                 onClick={handleClearForm}
                 className="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition"
@@ -405,11 +402,13 @@ export default function GeneratePage() {
             <div className="flex justify-center">
               <div className="certificate-preview-wrapper border border-gray-100 rounded shadow-sm">
                 <div className="certificate-preview-scale">
-                  {certType === 'completion' ? (
-                    <CertificateA {...certProps} />
-                  ) : (
-                    <CertificateB {...certProps} />
-                  )}
+                  <div id="certificate-print-area">
+                    {certType === 'completion' ? (
+                      <CertificateA {...certProps} />
+                    ) : (
+                      <CertificateB {...certProps} />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -420,17 +419,6 @@ export default function GeneratePage() {
           </div>
         </div>
       </main>
-
-      {/* ── FULL-SIZE CERTIFICATE FOR PRINTING ── innerHTML cloned into popup window */}
-      <div style={{ visibility: 'hidden', position: 'absolute', top: 0, left: -9999 }}>
-        <div id="certificate-print-area">
-          {certType === 'completion' ? (
-            <CertificateA {...certProps} />
-          ) : (
-            <CertificateB {...certProps} />
-          )}
-        </div>
-      </div>
 
       {/* ── PREVIEW MODAL ── */}
       {showPreviewModal && (
