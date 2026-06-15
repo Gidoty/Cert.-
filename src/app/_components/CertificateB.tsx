@@ -276,19 +276,17 @@ export default function CertificateB({
             <div style={{ fontSize: 12, color: '#6B5A3A' }}>
               Issued: {dateIssued || ' '}
             </div>
-            {certificateCode && (
-              <div
-                style={{
-                  fontSize: 10,
-                  color: '#A89272',
-                  fontFamily: 'Courier, monospace',
-                  marginTop: 4,
-                  letterSpacing: '1.5px',
-                }}
-              >
-                {certificateCode}
-              </div>
-            )}
+            <div
+              style={{
+                fontSize: 10,
+                color: '#A89272',
+                fontFamily: 'Courier, monospace',
+                marginTop: 4,
+                letterSpacing: '1.5px',
+              }}
+            >
+              {certificateCode || ' '}
+            </div>
           </div>
         </div>
 

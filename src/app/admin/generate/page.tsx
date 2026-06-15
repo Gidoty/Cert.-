@@ -14,14 +14,6 @@ import { useRouter } from 'next/navigation';
 
 type CertType = 'completion' | 'achievement';
 
-const COHORTS = [
-  { label: 'Cohort 1', value: 'CO1' },
-  { label: 'Cohort 2', value: 'CO2' },
-  { label: 'Cohort 3', value: 'CO3' },
-  { label: 'Cohort 4', value: 'CO4' },
-  { label: 'Cohort 5', value: 'CO5' },
-];
-
 const COURSES: Record<CertType, string[]> = {
   completion: [
     'Cybersecurity Foundations',
@@ -37,22 +29,15 @@ const COURSES: Record<CertType, string[]> = {
   ],
 };
 
-function getDateIssued(): string {
-  const now = new Date();
-  const month = now.toLocaleString('en-US', { month: 'long' });
-  const year = now.getFullYear();
-  return `${month}, ${year}`;
-}
-
 export default function GeneratePage() {
   const router = useRouter();
   const certificateRef = useRef<HTMLDivElement>(null);
 
   const [certType, setCertType] = useState<CertType>('completion');
-  const [cohort, setCohort] = useState('CO1');
+  const [cohort, setCohort] = useState('');
   const [courseName, setCourseName] = useState('');
   const [candidateName, setCandidateName] = useState('');
-  const dateIssued = getDateIssued();
+  const [dateIssued, setDateIssued] = useState('');
 
   const [certificateCode, setCertificateCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -69,21 +54,30 @@ export default function GeneratePage() {
 
   function handleClearForm() {
     setCertType('completion');
-    setCohort('CO1');
+    setCohort('');
     setCourseName('');
     setCandidateName('');
+    setDateIssued('');
     setCertificateCode('');
     setIsGenerated(false);
     setError('');
   }
 
   async function handleGenerate() {
+    if (!cohort.trim()) {
+      setError('Please enter the cohort (e.g. CO1).');
+      return;
+    }
     if (!candidateName.trim()) {
       setError('Please enter the candidate full name.');
       return;
     }
     if (!courseName) {
       setError('Please select a course name.');
+      return;
+    }
+    if (!dateIssued.trim()) {
+      setError('Please enter the date of issue (e.g. June, 2026).');
       return;
     }
     setError('');
@@ -220,17 +214,16 @@ export default function GeneratePage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
                   Cohort
                 </label>
-                <select
+                <input
+                  type="text"
                   value={cohort}
-                  onChange={(e) => setCohort(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal bg-white"
-                >
-                  {COHORTS.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label} ({c.value})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(e) => {
+                    setCohort(e.target.value);
+                    setCertificateCode('');
+                  }}
+                  placeholder="e.g. CO1"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal"
+                />
               </div>
 
               {/* Course Name */}
@@ -266,7 +259,7 @@ export default function GeneratePage() {
                 />
               </div>
 
-              {/* Date Issued (read-only) */}
+              {/* Date Issued (manual entry) */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
                   Date of Issue
@@ -274,8 +267,9 @@ export default function GeneratePage() {
                 <input
                   type="text"
                   value={dateIssued}
-                  readOnly
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-500 bg-gray-50 cursor-not-allowed"
+                  onChange={(e) => setDateIssued(e.target.value)}
+                  placeholder="e.g. June, 2026"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal"
                 />
               </div>
 
