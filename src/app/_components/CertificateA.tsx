@@ -119,6 +119,25 @@ export default function CertificateA({
         >
           Certificate of Completion
         </div>
+
+        {/* Certificate code — top right, same level as "Port Harcourt" */}
+        {certificateCode && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 85,
+              right: 24,
+              color: 'white',
+              fontFamily: 'Courier, monospace',
+              fontSize: 11,
+              opacity: 0.85,
+              letterSpacing: '1px',
+              textAlign: 'right',
+            }}
+          >
+            {certificateCode}
+          </div>
+        )}
       </div>
 
       {/* ── Outer navy border (frames the whole certificate) ── */}
@@ -223,17 +242,7 @@ export default function CertificateA({
             <div style={{ fontSize: 12, color: '#6B5A3A' }}>
               Issued: {dateIssued || ' '}
             </div>
-            <div
-              style={{
-                fontSize: 10,
-                color: '#A89272',
-                fontFamily: 'Courier, monospace',
-                marginTop: 4,
-                letterSpacing: '1.5px',
-              }}
-            >
-              {certificateCode || ' '}
-            </div>
+
           </div>
         </div>
 
