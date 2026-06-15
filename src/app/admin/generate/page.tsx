@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import AuthGuard, { clearAdminAuth } from '@/app/_components/AuthGuard';
 import CertificateA from '@/app/_components/CertificateA';
 import CertificateB from '@/app/_components/CertificateB';
@@ -26,7 +26,6 @@ const COURSES: Record<CertType, string[]> = {
 
 export default function GeneratePage() {
   const router = useRouter();
-  const certificateRef = useRef<HTMLDivElement>(null);
 
   const [certType, setCertType] = useState<CertType>('completion');
   const [cohort, setCohort] = useState('');
@@ -66,35 +65,8 @@ export default function GeneratePage() {
     setError('');
   }
 
-  // PDF download — inline as requested, uses the captured code for the filename
-  const handleDownload = async (code: string) => {
-    try {
-      const element = certificateRef.current;
-      if (!element) return;
-
-      await document.fonts.ready;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const html2canvas = (await import('html2canvas')).default;
-      const { jsPDF } = await import('jspdf');
-
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#FDF8EE',
-        logging: true,
-        imageTimeout: 15000,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
-      pdf.save(`Metabridge-${code.replace(/\//g, '-')}.pdf`);
-    } catch (err) {
-      console.error('PDF Error:', err);
-      alert('PDF Error: ' + (err instanceof Error ? err.message : String(err)));
-    }
+  const handleDownload = () => {
+    window.print();
   };
 
   async function handleGenerate() {
@@ -119,7 +91,7 @@ export default function GeneratePage() {
       return;
     }
 
-    const code = liveCode; // capture before any awaits
+    const code = liveCode;
     setError('');
     setIsGenerating(true);
 
@@ -134,7 +106,6 @@ export default function GeneratePage() {
         return;
       }
 
-      // Parse serial to integer for Supabase (strips leading zeros: "00042" → 42)
       const parsedSerial = parseInt(serialNumber.replace(/^0+/, '') || '0', 10);
 
       await saveCertificate({
@@ -151,10 +122,12 @@ export default function GeneratePage() {
         date_issued: dateIssued.trim(),
       });
 
-      await handleDownload(code);
-
       setGeneratedCode(code);
       setIsGenerated(true);
+
+      // Small delay so success state renders before print dialog opens
+      await new Promise((r) => setTimeout(r, 200));
+      window.print();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong.';
       setError(`Error: ${msg}`);
@@ -208,12 +181,16 @@ export default function GeneratePage() {
             </div>
             <p className="text-gray-600 text-sm mb-1">Certificate Code:</p>
             <p className="font-mono text-navy font-bold text-xl mb-4">{generatedCode}</p>
+            <p className="text-gray-500 text-xs mb-4">
+              Tip: In the print dialog, select <strong>Save as PDF</strong> and enable{' '}
+              <strong>Background graphics</strong> for full colour.
+            </p>
             <div className="flex gap-3 flex-wrap">
               <button
-                onClick={() => handleDownload(generatedCode)}
+                onClick={handleDownload}
                 className="bg-navy text-white px-5 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition"
               >
-                Download PDF Again
+                Print / Save as PDF Again
               </button>
               <button
                 onClick={handleClearForm}
@@ -279,7 +256,7 @@ export default function GeneratePage() {
                 />
               </div>
 
-              {/* Live Certificate Code — updates as Gideon types */}
+              {/* Live Certificate Code */}
               {liveCode && (
                 <div className="bg-navy/5 border border-navy/20 rounded-lg px-4 py-3">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">
@@ -356,7 +333,7 @@ export default function GeneratePage() {
                   disabled={isGenerating}
                   className="flex-1 bg-navy text-white py-3 rounded-lg font-semibold hover:opacity-90 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isGenerating ? 'Generating...' : 'Generate & Download PDF'}
+                  {isGenerating ? 'Saving...' : 'Print / Save as PDF'}
                 </button>
               </div>
               <button
@@ -382,20 +359,32 @@ export default function GeneratePage() {
               <div className="certificate-preview-wrapper border border-gray-100 rounded shadow-sm">
                 <div className="certificate-preview-scale">
                   {certType === 'completion' ? (
-                    <CertificateA {...certProps} divRef={certificateRef} />
+                    <CertificateA {...certProps} />
                   ) : (
-                    <CertificateB {...certProps} divRef={certificateRef} />
+                    <CertificateB {...certProps} />
                   )}
                 </div>
               </div>
             </div>
 
             <p className="text-xs text-gray-400 text-center mt-4">
-              The PDF will be A4 landscape at full resolution
+              Prints at A4 landscape · Enable &ldquo;Background graphics&rdquo; in print dialog
             </p>
           </div>
         </div>
       </main>
+
+      {/* ── FULL-SIZE CERTIFICATE FOR PRINTING ── hidden on screen, revealed by print CSS */}
+      <div
+        id="certificate-print-area"
+        style={{ visibility: 'hidden', position: 'absolute', top: 0, left: -9999 }}
+      >
+        {certType === 'completion' ? (
+          <CertificateA {...certProps} />
+        ) : (
+          <CertificateB {...certProps} />
+        )}
+      </div>
 
       {/* ── PREVIEW MODAL ── */}
       {showPreviewModal && (
