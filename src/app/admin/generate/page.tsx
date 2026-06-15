@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import AuthGuard, { clearAdminAuth } from '@/app/_components/AuthGuard';
 import CertificateA from '@/app/_components/CertificateA';
 import CertificateB from '@/app/_components/CertificateB';
@@ -26,6 +27,7 @@ const COURSES: Record<CertType, string[]> = {
 
 export default function GeneratePage() {
   const router = useRouter();
+  const certificateRef = useRef<HTMLDivElement>(null);
 
   const [certType, setCertType] = useState<CertType>('completion');
   const [cohort, setCohort] = useState('');
@@ -63,9 +65,21 @@ export default function GeneratePage() {
     setError('');
   }
 
-  const handleDownload = () => {
-    window.print();
-  };
+  const handlePrint = useReactToPrint({
+    contentRef: certificateRef,
+    documentTitle: `Metabridge-Certificate-${liveCode || generatedCode}`,
+    pageStyle: `
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+      @media print {
+        body { margin: 0; padding: 0; }
+        * { -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important; }
+      }
+    `,
+  });
 
   async function handleGenerate() {
     if (!cohort.trim()) {
@@ -122,14 +136,14 @@ export default function GeneratePage() {
 
       setGeneratedCode(code);
       setIsGenerated(true);
+      setIsGenerating(false);
 
       // Small delay so success state renders before print dialog opens
       await new Promise((r) => setTimeout(r, 200));
-      window.print();
+      handlePrint();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong.';
       setError(`Error: ${msg}`);
-    } finally {
       setIsGenerating(false);
     }
   }
@@ -185,10 +199,10 @@ export default function GeneratePage() {
             </p>
             <div className="flex gap-3 flex-wrap">
               <button
-                onClick={handleDownload}
+                onClick={handlePrint}
                 className="bg-navy text-white px-5 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition"
               >
-                Print / Save as PDF Again
+                Download / Print Certificate
               </button>
               <button
                 onClick={handleClearForm}
@@ -348,7 +362,7 @@ export default function GeneratePage() {
                   disabled={isGenerating}
                   className="flex-1 bg-navy text-white py-3 rounded-lg font-semibold hover:opacity-90 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isGenerating ? 'Saving...' : 'Print / Save as PDF'}
+                  {isGenerating ? 'Saving...' : 'Download / Print Certificate'}
                 </button>
               </div>
               <button
@@ -389,16 +403,15 @@ export default function GeneratePage() {
         </div>
       </main>
 
-      {/* ── FULL-SIZE CERTIFICATE FOR PRINTING ── hidden on screen, revealed by print CSS */}
-      <div
-        id="certificate-print-area"
-        style={{ visibility: 'hidden', position: 'absolute', top: 0, left: -9999 }}
-      >
-        {certType === 'completion' ? (
-          <CertificateA {...certProps} />
-        ) : (
-          <CertificateB {...certProps} />
-        )}
+      {/* ── FULL-SIZE CERTIFICATE FOR PRINTING ── react-to-print targets this ref */}
+      <div style={{ display: 'none' }}>
+        <div ref={certificateRef}>
+          {certType === 'completion' ? (
+            <CertificateA {...certProps} />
+          ) : (
+            <CertificateB {...certProps} />
+          )}
+        </div>
       </div>
 
       {/* ── PREVIEW MODAL ── */}
