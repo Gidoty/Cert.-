@@ -1,22 +1,12 @@
 import { supabase } from './supabase';
 
-export async function getNextSerial(cohort: string): Promise<number> {
-  const { data, error } = await supabase
+export async function checkDuplicateCode(code: string): Promise<boolean> {
+  const { data } = await supabase
     .from('certificates')
-    .select('serial_number')
-    .eq('cohort', cohort)
-    .order('serial_number', { ascending: false })
-    .limit(1)
+    .select('id')
+    .eq('certificate_code', code)
     .maybeSingle();
-
-  if (error || !data) return 1;
-  return (data.serial_number as number) + 1;
-}
-
-export function buildCertificateCode(cohort: string, year: number, serial: number): string {
-  const yy = String(year).slice(-2);
-  const nn = String(serial).padStart(5, '0');
-  return `MA/${cohort}/${yy}/${nn}`;
+  return data !== null;
 }
 
 export async function saveCertificate(payload: {

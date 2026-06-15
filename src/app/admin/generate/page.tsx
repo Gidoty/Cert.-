@@ -4,12 +4,7 @@ import { useState, useRef } from 'react';
 import AuthGuard, { clearAdminAuth } from '@/app/_components/AuthGuard';
 import CertificateA from '@/app/_components/CertificateA';
 import CertificateB from '@/app/_components/CertificateB';
-import {
-  getNextSerial,
-  buildCertificateCode,
-  saveCertificate,
-} from '@/lib/certificateCode';
-import { downloadCertificatePDF } from '@/lib/pdfDownload';
+import { saveCertificate, checkDuplicateCode } from '@/lib/certificateCode';
 import { useRouter } from 'next/navigation';
 
 type CertType = 'completion' | 'achievement';
@@ -35,37 +30,80 @@ export default function GeneratePage() {
 
   const [certType, setCertType] = useState<CertType>('completion');
   const [cohort, setCohort] = useState('');
+  const [serialNumber, setSerialNumber] = useState('');
   const [courseName, setCourseName] = useState('');
   const [candidateName, setCandidateName] = useState('');
   const [dateIssued, setDateIssued] = useState('');
 
-  const [certificateCode, setCertificateCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('');
   const [error, setError] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  // Certificate code built live from form values — updates as Gideon types
+  const yy = String(new Date().getFullYear()).slice(-2);
+  const liveCode =
+    cohort.trim() && serialNumber.trim()
+      ? `MA/${cohort.trim()}/${yy}/${serialNumber.trim()}`
+      : '';
 
   function handleCertTypeChange(val: CertType) {
     setCertType(val);
     setCourseName('');
-    setCertificateCode('');
     setIsGenerated(false);
   }
 
   function handleClearForm() {
     setCertType('completion');
     setCohort('');
+    setSerialNumber('');
     setCourseName('');
     setCandidateName('');
     setDateIssued('');
-    setCertificateCode('');
     setIsGenerated(false);
+    setGeneratedCode('');
     setError('');
   }
+
+  // PDF download — inline as requested, uses the captured code for the filename
+  const handleDownload = async (code: string) => {
+    try {
+      const element = certificateRef.current;
+      if (!element) return;
+
+      await document.fonts.ready;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#FDF8EE',
+        logging: true,
+        imageTimeout: 15000,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+      pdf.save(`Metabridge-${code.replace(/\//g, '-')}.pdf`);
+    } catch (err) {
+      console.error('PDF Error:', err);
+      alert('PDF Error: ' + (err instanceof Error ? err.message : String(err)));
+    }
+  };
 
   async function handleGenerate() {
     if (!cohort.trim()) {
       setError('Please enter the cohort (e.g. CO1).');
+      return;
+    }
+    if (!serialNumber.trim()) {
+      setError('Please enter the serial number (e.g. 00001).');
       return;
     }
     if (!candidateName.trim()) {
@@ -80,36 +118,42 @@ export default function GeneratePage() {
       setError('Please enter the date of issue (e.g. June, 2026).');
       return;
     }
+
+    const code = liveCode; // capture before any awaits
     setError('');
     setIsGenerating(true);
 
     try {
-      const year = new Date().getFullYear();
-      const serial = await getNextSerial(cohort);
-      const code = buildCertificateCode(cohort, year, serial);
+      // ── Duplicate check ──
+      const isDuplicate = await checkDuplicateCode(code);
+      if (isDuplicate) {
+        setError(
+          `⚠️ Certificate code ${code} already exists. Please use a different serial number.`
+        );
+        setIsGenerating(false);
+        return;
+      }
 
-      setCertificateCode(code);
+      // Parse serial to integer for Supabase (strips leading zeros: "00042" → 42)
+      const parsedSerial = parseInt(serialNumber.replace(/^0+/, '') || '0', 10);
 
-      // Wait for the child component's useEffect to generate the QR and re-render
-      await new Promise((r) => setTimeout(r, 700));
-
-      // Save to Supabase
       await saveCertificate({
         certificate_code: code,
-        certificate_type: certType === 'completion'
-          ? 'Certificate of Completion'
-          : 'Certificate of Achievement',
+        certificate_type:
+          certType === 'completion'
+            ? 'Certificate of Completion'
+            : 'Certificate of Achievement',
         candidate_name: candidateName.trim(),
         course_name: courseName,
-        cohort,
-        serial_number: serial,
-        year_issued: year,
-        date_issued: dateIssued,
+        cohort: cohort.trim(),
+        serial_number: parsedSerial,
+        year_issued: new Date().getFullYear(),
+        date_issued: dateIssued.trim(),
       });
 
-      // Download PDF
-      await downloadCertificatePDF(certificateRef, code);
+      await handleDownload(code);
 
+      setGeneratedCode(code);
       setIsGenerated(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong.';
@@ -117,11 +161,6 @@ export default function GeneratePage() {
     } finally {
       setIsGenerating(false);
     }
-  }
-
-  async function handleDownloadAgain() {
-    if (!certificateCode) return;
-    await downloadCertificatePDF(certificateRef, certificateCode);
   }
 
   function handleLogout() {
@@ -133,7 +172,7 @@ export default function GeneratePage() {
     candidateName: candidateName || 'Candidate Full Name',
     courseName: courseName || 'Course Name',
     dateIssued,
-    certificateCode,
+    certificateCode: liveCode,
   };
 
   return (
@@ -168,10 +207,10 @@ export default function GeneratePage() {
               <h2 className="text-green-700 font-bold text-lg">Certificate Generated Successfully</h2>
             </div>
             <p className="text-gray-600 text-sm mb-1">Certificate Code:</p>
-            <p className="font-mono text-navy font-bold text-xl mb-4">{certificateCode}</p>
+            <p className="font-mono text-navy font-bold text-xl mb-4">{generatedCode}</p>
             <div className="flex gap-3 flex-wrap">
               <button
-                onClick={handleDownloadAgain}
+                onClick={() => handleDownload(generatedCode)}
                 className="bg-navy text-white px-5 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition"
               >
                 Download PDF Again
@@ -189,7 +228,10 @@ export default function GeneratePage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* ── LEFT: FORM ── */}
           <div className="bg-white rounded-xl shadow p-8">
-            <h2 className="text-navy font-bold text-2xl mb-6" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+            <h2
+              className="text-navy font-bold text-2xl mb-6"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
               Generate Certificate
             </h2>
 
@@ -217,14 +259,35 @@ export default function GeneratePage() {
                 <input
                   type="text"
                   value={cohort}
-                  onChange={(e) => {
-                    setCohort(e.target.value);
-                    setCertificateCode('');
-                  }}
+                  onChange={(e) => setCohort(e.target.value)}
                   placeholder="e.g. CO1"
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal"
                 />
               </div>
+
+              {/* Serial Number */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
+                  Serial Number
+                </label>
+                <input
+                  type="text"
+                  value={serialNumber}
+                  onChange={(e) => setSerialNumber(e.target.value)}
+                  placeholder="e.g. 00001"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal font-mono"
+                />
+              </div>
+
+              {/* Live Certificate Code — updates as Gideon types */}
+              {liveCode && (
+                <div className="bg-navy/5 border border-navy/20 rounded-lg px-4 py-3">
+                  <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">
+                    Certificate Code
+                  </p>
+                  <p className="font-mono text-navy font-bold text-lg">{liveCode}</p>
+                </div>
+              )}
 
               {/* Course Name */}
               <div>
@@ -259,7 +322,7 @@ export default function GeneratePage() {
                 />
               </div>
 
-              {/* Date Issued (manual entry) */}
+              {/* Date Issued */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
                   Date of Issue
@@ -273,19 +336,11 @@ export default function GeneratePage() {
                 />
               </div>
 
-              {/* Certificate Code Preview */}
-              {certificateCode && (
-                <div className="bg-navy/5 border border-navy/20 rounded-lg px-4 py-3">
-                  <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Certificate Code</p>
-                  <p className="font-mono text-navy font-bold text-lg">{certificateCode}</p>
-                </div>
-              )}
-
-              {/* Error */}
+              {/* Error / Duplicate Warning */}
               {error && (
-                <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-4 py-2">
-                  {error}
-                </p>
+                <div className="bg-red-50 border border-red-300 rounded-lg px-4 py-3">
+                  <p className="text-red-700 text-sm font-medium">{error}</p>
+                </div>
               )}
 
               {/* Buttons */}
@@ -315,7 +370,10 @@ export default function GeneratePage() {
 
           {/* ── RIGHT: LIVE PREVIEW ── */}
           <div className="bg-white rounded-xl shadow p-8">
-            <h2 className="text-navy font-bold text-2xl mb-4" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+            <h2
+              className="text-navy font-bold text-2xl mb-4"
+              style={{ fontFamily: 'var(--font-playfair), serif' }}
+            >
               Live Preview
             </h2>
             <p className="text-gray-500 text-sm mb-4">Updates as you fill in the form</p>
