@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* Certificate preview scaling utilities */
+.certificate-preview-wrapper {
+  width: 505px;
+  height: 357px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.certificate-preview-scale {
+  transform: scale(0.45);
+  transform-origin: top left;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
