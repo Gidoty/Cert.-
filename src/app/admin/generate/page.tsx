@@ -41,11 +41,9 @@ export default function GeneratePage() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   // Certificate code built live from form values — updates as Gideon types
-  const yy = String(new Date().getFullYear()).slice(-2);
-  const liveCode =
-    cohort.trim() && serialNumber.trim()
-      ? `MA/${cohort.trim()}/${yy}/${serialNumber.trim()}`
-      : '';
+  const yy = dateIssued.match(/\d{4}/)?.[0]?.slice(-2) ?? '';
+  const codePrefix = cohort.trim() && yy ? `MA/${cohort.trim()}/${yy}/` : '';
+  const liveCode = codePrefix && serialNumber.trim() ? `${codePrefix}${serialNumber.trim()}` : '';
 
   function handleCertTypeChange(val: CertType) {
     setCertType(val);
@@ -242,6 +240,37 @@ export default function GeneratePage() {
                 />
               </div>
 
+              {/* Date of Issue — placed here so yy is available for the prefix below */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
+                  Date of Issue
+                </label>
+                <input
+                  type="text"
+                  value={dateIssued}
+                  onChange={(e) => setDateIssued(e.target.value)}
+                  placeholder="e.g. June, 2026"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal"
+                />
+              </div>
+
+              {/* Certificate Code Prefix — read-only, derived from cohort + year in date */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
+                  Certificate Code Prefix
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={codePrefix || 'Fill in Cohort and Date of Issue above'}
+                  className={`w-full border rounded-lg px-4 py-3 font-mono text-sm focus:outline-none cursor-default select-all ${
+                    codePrefix
+                      ? 'border-navy/30 bg-navy/5 text-navy font-bold'
+                      : 'border-gray-200 bg-gray-50 text-gray-400 italic'
+                  }`}
+                />
+              </div>
+
               {/* Serial Number */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
@@ -256,11 +285,11 @@ export default function GeneratePage() {
                 />
               </div>
 
-              {/* Live Certificate Code */}
+              {/* Full certificate code — live once prefix + serial are present */}
               {liveCode && (
                 <div className="bg-navy/5 border border-navy/20 rounded-lg px-4 py-3">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">
-                    Certificate Code
+                    Full Certificate Code
                   </p>
                   <p className="font-mono text-navy font-bold text-lg">{liveCode}</p>
                 </div>
@@ -295,20 +324,6 @@ export default function GeneratePage() {
                   value={candidateName}
                   onChange={(e) => setCandidateName(e.target.value)}
                   placeholder="Enter full name exactly as it should appear"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal"
-                />
-              </div>
-
-              {/* Date Issued */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                  Date of Issue
-                </label>
-                <input
-                  type="text"
-                  value={dateIssued}
-                  onChange={(e) => setDateIssued(e.target.value)}
-                  placeholder="e.g. June, 2026"
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal"
                 />
               </div>
