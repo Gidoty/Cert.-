@@ -28,23 +28,26 @@ export default function CertificateA({
       {
         margin: 1,
         width: 100,
-        color: { dark: '#1B2A4A', light: '#FFFFFF' },
+        color: { dark: '#1B2A4A', light: '#FDF8EE' },
       }
     ).then((url) => setQrDataUrl(url));
   }, [certificateCode]);
+
+  const HEADER_H = 159; // 20% of 793px
+
   return (
     <div
       ref={divRef}
       style={{
         width: 1122,
         height: 793,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#FDF8EE',
         position: 'relative',
         overflow: 'hidden',
         fontFamily: 'var(--font-inter), Inter, sans-serif',
       }}
     >
-      {/* Left orange accent bar */}
+      {/* ── Gold left accent bar — full height ── */}
       <div
         style={{
           position: 'absolute',
@@ -53,92 +56,98 @@ export default function CertificateA({
           bottom: 0,
           width: 6,
           backgroundColor: '#F4891F',
-          zIndex: 2,
+          zIndex: 10,
         }}
       />
 
-      {/* Outer navy border */}
+      {/* ── Navy header band (top 20%) ── */}
       <div
         style={{
           position: 'absolute',
-          inset: 10,
-          border: '2px solid #1B2A4A',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      />
-
-      {/* Main content area */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 26,
+          top: 0,
+          left: 0,
+          right: 0,
+          height: HEADER_H,
+          backgroundColor: '#1B2A4A',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2,
         }}
       >
-        {/* ── HEADER ── */}
-        <div style={{ textAlign: 'center', paddingTop: 28 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 30,
-              fontWeight: 700,
-              color: '#1B2A4A',
-              letterSpacing: '0.5px',
-              lineHeight: 1.2,
-            }}
-          >
-            Metabridge Academy
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: '#6B7280',
-              fontStyle: 'italic',
-              marginTop: 4,
-            }}
-          >
-            Gateway to Digital Literacy
-          </div>
-
-          {/* Thin horizontal rule */}
-          <div
-            style={{
-              width: '60%',
-              margin: '10px auto',
-              height: 1,
-              backgroundColor: '#E5E7EB',
-            }}
-          />
-
-          {/* Certificate type label */}
-          <div
-            style={{
-              fontSize: 14,
-              color: '#F4891F',
-              fontWeight: 800,
-              letterSpacing: '3px',
-              textTransform: 'uppercase',
-            }}
-          >
-            Certificate of Completion
-          </div>
-
-          {/* Top decorative rule beneath header */}
-          <div
-            style={{
-              width: '80%',
-              margin: '10px auto 0',
-              height: 1,
-              backgroundColor: '#F4891F',
-              opacity: 0.4,
-            }}
-          />
+        <div
+          style={{
+            fontFamily: 'var(--font-playfair), "Playfair Display", serif',
+            fontSize: 34,
+            fontWeight: 700,
+            color: '#FFFFFF',
+            letterSpacing: '1px',
+            lineHeight: 1.2,
+          }}
+        >
+          Metabridge Academy
         </div>
+        <div
+          style={{
+            fontSize: 10,
+            color: 'rgba(255,255,255,0.65)',
+            letterSpacing: '4px',
+            textTransform: 'uppercase',
+            marginTop: 6,
+          }}
+        >
+          Port Harcourt
+        </div>
+        <div
+          style={{
+            width: 180,
+            height: 1,
+            backgroundColor: '#F4891F',
+            opacity: 0.7,
+            margin: '10px 0',
+          }}
+        />
+        <div
+          style={{
+            fontSize: 12,
+            color: '#F4891F',
+            fontWeight: 800,
+            letterSpacing: '5px',
+            textTransform: 'uppercase',
+          }}
+        >
+          Certificate of Completion
+        </div>
+      </div>
 
-        {/* ── BODY ── */}
+      {/* ── Outer navy border (frames the whole certificate) ── */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 8,
+          border: '2px solid #1B2A4A',
+          pointerEvents: 'none',
+          zIndex: 6,
+        }}
+      />
+
+      {/* ── Body content — below the header band ── */}
+      <div
+        style={{
+          position: 'absolute',
+          top: HEADER_H,
+          left: 6,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '30px 70px 18px',
+        }}
+      >
+        {/* Central text block */}
         <div
           style={{
             flex: 1,
@@ -147,73 +156,95 @@ export default function CertificateA({
             alignItems: 'center',
             justifyContent: 'center',
             textAlign: 'center',
-            paddingTop: 8,
           }}
         >
-          <div style={{ fontSize: 13, color: '#6B7280', fontStyle: 'italic' }}>
+          <div
+            style={{
+              fontSize: 14,
+              color: '#6B5A3A',
+              fontStyle: 'italic',
+              marginBottom: 14,
+            }}
+          >
             This is to certify that
           </div>
 
           <div
             style={{
               fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 40,
+              fontSize: 42,
               fontWeight: 700,
               color: '#1B2A4A',
               lineHeight: 1.2,
-              marginTop: 10,
-              marginBottom: 4,
-              minHeight: 56,
+              minHeight: 58,
             }}
           >
             {candidateName || ' '}
           </div>
 
-          <div style={{ fontSize: 13, color: '#4B5563', marginTop: 10 }}>
+          {/* Gold rule under name */}
+          <div
+            style={{
+              width: 110,
+              height: 2,
+              backgroundColor: '#F4891F',
+              margin: '12px auto 14px',
+            }}
+          />
+
+          <div
+            style={{
+              fontSize: 13,
+              color: '#6B5A3A',
+              fontStyle: 'italic',
+              marginBottom: 8,
+            }}
+          >
             has successfully completed the
           </div>
 
           <div
             style={{
+              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
               fontSize: 22,
               fontWeight: 700,
               color: '#1B2A4A',
-              marginTop: 6,
+              marginBottom: 6,
             }}
           >
             {courseName || ' '}
           </div>
 
-          <div style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: '#8C7654' }}>
             training programme conducted by Metabridge Academy
           </div>
 
-          {/* Date and code */}
-          <div style={{ marginTop: 16, textAlign: 'center' }}>
-            <div style={{ fontSize: 12, color: '#6B7280' }}>
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 12, color: '#6B5A3A' }}>
               Issued: {dateIssued || ' '}
             </div>
-            <div
-              style={{
-                fontSize: 11,
-                color: '#9CA3AF',
-                fontFamily: 'Courier, monospace',
-                marginTop: 4,
-                letterSpacing: '1px',
-              }}
-            >
-              {certificateCode || ' '}
-            </div>
+            {certificateCode && (
+              <div
+                style={{
+                  fontSize: 10,
+                  color: '#A89272',
+                  fontFamily: 'Courier, monospace',
+                  marginTop: 4,
+                  letterSpacing: '1.5px',
+                }}
+              >
+                {certificateCode}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ── SIGNATURES ── */}
+        {/* Signature */}
         <div
           style={{
             width: '100%',
-            borderTop: '1px solid #E5E7EB',
-            paddingTop: 16,
-            paddingBottom: 20,
+            borderTop: '1px solid #C8B48A',
+            paddingTop: 14,
             display: 'flex',
             justifyContent: 'center',
           }}
@@ -221,56 +252,39 @@ export default function CertificateA({
           <div style={{ textAlign: 'center' }}>
             <div
               style={{
-                fontSize: 18,
-                color: '#1B2A4A',
-                fontFamily: 'cursive',
-                marginBottom: 2,
-                letterSpacing: '2px',
+                width: 140,
+                borderBottom: '1px solid #1B2A4A',
+                margin: '0 auto 6px',
               }}
-            >
-              _______________
-            </div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: '#1B2A4A',
-              }}
-            >
+            />
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#1B2A4A' }}>
               Bright G. O
             </div>
-            <div style={{ fontSize: 11, color: '#6B7280' }}>
+            <div style={{ fontSize: 11, color: '#8C7654' }}>
               Lead Instructor, Metabridge Academy
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── QR CODE ── bottom-right */}
+      {/* ── QR CODE — bottom-right ── */}
       {qrDataUrl && (
         <div
           style={{
             position: 'absolute',
-            bottom: 20,
-            right: 20,
+            bottom: 18,
+            right: 18,
             textAlign: 'center',
-            zIndex: 3,
+            zIndex: 7,
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrDataUrl}
             alt="Scan to verify"
-            style={{ width: 80, height: 80, display: 'block' }}
+            style={{ width: 72, height: 72, display: 'block' }}
           />
-          <div
-            style={{
-              fontSize: 9,
-              color: '#9CA3AF',
-              marginTop: 3,
-              textAlign: 'center',
-            }}
-          >
+          <div style={{ fontSize: 8, color: '#A89272', marginTop: 2 }}>
             Scan to verify
           </div>
         </div>

@@ -12,9 +12,15 @@ interface CertificateBProps {
   divRef?: RefObject<HTMLDivElement>;
 }
 
-const DiamondSVG = ({ size = 14, color = '#F4891F' }: { size?: number; color?: string }) => (
-  <svg viewBox="0 0 20 20" width={size} height={size} style={{ display: 'inline-block' }}>
-    <polygon points="10,0 20,10 10,20 0,10" fill={color} />
+const CornerDiamond = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20">
+    <polygon points="10,0 20,10 10,20 0,10" fill="#F4891F" />
+  </svg>
+);
+
+const SmallDiamond = ({ size = 10 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" style={{ display: 'inline-block' }}>
+    <polygon points="10,0 20,10 10,20 0,10" fill="#F4891F" />
   </svg>
 );
 
@@ -34,118 +40,164 @@ export default function CertificateB({
       {
         margin: 1,
         width: 100,
-        color: { dark: '#1B2A4A', light: '#FFFFFF' },
+        color: { dark: '#1B2A4A', light: '#FDF8EE' },
       }
     ).then((url) => setQrDataUrl(url));
   }, [certificateCode]);
+
+  const HEADER_H = 159; // 20% of 793px
+
   return (
     <div
       ref={divRef}
       style={{
         width: 1122,
         height: 793,
-        backgroundColor: '#F7F9FC',
+        backgroundColor: '#FDF8EE',
         position: 'relative',
         overflow: 'hidden',
         fontFamily: 'var(--font-inter), Inter, sans-serif',
       }}
     >
-      {/* ── Corner diamond ornaments ── */}
-      {/* Top-left */}
-      <div style={{ position: 'absolute', top: 12, left: 12, transform: 'rotate(45deg)', width: 16, height: 16, backgroundColor: '#F4891F' }} />
-      {/* Top-right */}
-      <div style={{ position: 'absolute', top: 12, right: 12, transform: 'rotate(45deg)', width: 16, height: 16, backgroundColor: '#F4891F' }} />
-      {/* Bottom-left */}
-      <div style={{ position: 'absolute', bottom: 12, left: 12, transform: 'rotate(45deg)', width: 16, height: 16, backgroundColor: '#F4891F' }} />
-      {/* Bottom-right */}
-      <div style={{ position: 'absolute', bottom: 12, right: 12, transform: 'rotate(45deg)', width: 16, height: 16, backgroundColor: '#F4891F' }} />
+      {/* ── Navy header band (top 20%) ── */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: HEADER_H,
+          backgroundColor: '#1B2A4A',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2,
+        }}
+      >
+        <div style={{ marginBottom: 6 }}>
+          <SmallDiamond size={14} />
+        </div>
 
-      {/* ── Outer border (navy, 3px) ── */}
+        <div
+          style={{
+            fontFamily: 'var(--font-playfair), "Playfair Display", serif',
+            fontSize: 34,
+            fontWeight: 700,
+            color: '#FFFFFF',
+            letterSpacing: '1px',
+            lineHeight: 1.2,
+          }}
+        >
+          Metabridge Academy
+        </div>
+
+        <div
+          style={{
+            fontSize: 10,
+            color: 'rgba(255,255,255,0.65)',
+            letterSpacing: '4px',
+            textTransform: 'uppercase',
+            marginTop: 6,
+          }}
+        >
+          Port Harcourt
+        </div>
+
+        {/* Gold divider with centre diamond */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            margin: '10px 0',
+            width: 240,
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              height: 1,
+              backgroundColor: '#F4891F',
+              opacity: 0.65,
+            }}
+          />
+          <SmallDiamond size={8} />
+          <div
+            style={{
+              flex: 1,
+              height: 1,
+              backgroundColor: '#F4891F',
+              opacity: 0.65,
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            fontSize: 12,
+            color: '#F4891F',
+            fontWeight: 800,
+            letterSpacing: '5px',
+            textTransform: 'uppercase',
+          }}
+        >
+          Certificate of Achievement
+        </div>
+      </div>
+
+      {/* ── Outer navy border (full certificate) ── */}
       <div
         style={{
           position: 'absolute',
           inset: 8,
           border: '3px solid #1B2A4A',
           pointerEvents: 'none',
+          zIndex: 5,
         }}
       />
 
-      {/* ── Inner border (orange, 1.5px) — 6px gap from outer ── */}
+      {/* ── Inner gold border (full certificate) ── */}
       <div
         style={{
           position: 'absolute',
-          inset: 17,
+          inset: 15,
           border: '1.5px solid #F4891F',
           pointerEvents: 'none',
+          zIndex: 5,
         }}
       />
 
-      {/* ── Main content area ── */}
+      {/* ── Corner diamond ornaments (sit on the outer border corners) ── */}
+      <div style={{ position: 'absolute', top: -1, left: -1, zIndex: 8 }}>
+        <CornerDiamond />
+      </div>
+      <div style={{ position: 'absolute', top: -1, right: -1, zIndex: 8 }}>
+        <CornerDiamond />
+      </div>
+      <div style={{ position: 'absolute', bottom: -1, left: -1, zIndex: 8 }}>
+        <CornerDiamond />
+      </div>
+      <div style={{ position: 'absolute', bottom: -1, right: -1, zIndex: 8 }}>
+        <CornerDiamond />
+      </div>
+
+      {/* ── Body content — below the header band ── */}
       <div
         style={{
           position: 'absolute',
-          inset: 32,
+          top: HEADER_H,
+          left: 0,
+          right: 0,
+          bottom: 0,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '28px 90px 18px',
         }}
       >
-        {/* ── HEADER ── */}
-        <div style={{ textAlign: 'center', paddingTop: 20 }}>
-          {/* Diamond ornament */}
-          <div style={{ marginBottom: 8 }}>
-            <DiamondSVG size={18} color="#F4891F" />
-          </div>
-
-          {/* Academy name */}
-          <div
-            style={{
-              fontSize: 12,
-              color: '#F4891F',
-              fontWeight: 800,
-              letterSpacing: '4px',
-              textTransform: 'uppercase',
-            }}
-          >
-            Metabridge Academy
-          </div>
-
-          <div style={{ fontSize: 10, color: '#6B7280', marginTop: 3 }}>
-            Port Harcourt
-          </div>
-
-          {/* Decorative divider with center diamond */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              margin: '10px auto',
-              width: 300,
-            }}
-          >
-            <div style={{ flex: 1, height: 1, backgroundColor: '#1B2A4A' }} />
-            <DiamondSVG size={10} color="#1B2A4A" />
-            <div style={{ flex: 1, height: 1, backgroundColor: '#1B2A4A' }} />
-          </div>
-
-          {/* Certificate type */}
-          <div
-            style={{
-              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 20,
-              fontWeight: 700,
-              color: '#1B2A4A',
-              letterSpacing: '2px',
-              textTransform: 'uppercase',
-            }}
-          >
-            Certificate of Achievement
-          </div>
-        </div>
-
-        {/* ── BODY ── */}
+        {/* Central text block */}
         <div
           style={{
             flex: 1,
@@ -156,40 +208,49 @@ export default function CertificateB({
             textAlign: 'center',
           }}
         >
-          <div style={{ fontSize: 13, color: '#6B7280', fontStyle: 'italic', marginBottom: 8 }}>
+          <div
+            style={{
+              fontSize: 14,
+              color: '#6B5A3A',
+              fontStyle: 'italic',
+              marginBottom: 12,
+            }}
+          >
             Awarded to
           </div>
 
-          {/* Candidate name — centerpiece */}
+          {/* Candidate name — the centrepiece */}
           <div
             style={{
               fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 44,
+              fontSize: 46,
               fontWeight: 700,
               color: '#1B2A4A',
               lineHeight: 1.2,
-              minHeight: 60,
+              minHeight: 65,
             }}
           >
             {candidateName || ' '}
           </div>
 
-          {/* Decorative underline */}
+          {/* Gold horizontal rule under name */}
           <div
             style={{
               width: 140,
               height: 2,
               backgroundColor: '#F4891F',
-              margin: '8px auto 14px',
+              margin: '12px auto 16px',
             }}
           />
 
           <div
             style={{
-              fontSize: 12,
-              color: '#4B5563',
+              fontSize: 13,
+              color: '#6B5A3A',
               fontStyle: 'italic',
-              maxWidth: 600,
+              marginBottom: 8,
+              maxWidth: 540,
+              lineHeight: 1.6,
             }}
           >
             In recognition of dedicated commitment and successful completion of the
@@ -197,97 +258,105 @@ export default function CertificateB({
 
           <div
             style={{
+              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
               fontSize: 24,
               fontWeight: 700,
               color: '#1B2A4A',
-              marginTop: 6,
+              marginBottom: 6,
             }}
           >
             {courseName || ' '}
           </div>
 
-          <div style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: '#8C7654' }}>
             certification programme at Metabridge Academy
           </div>
 
-          {/* Thin rule + date + code */}
-          <div style={{ marginTop: 16, width: '60%', textAlign: 'center' }}>
-            <div style={{ height: 1, backgroundColor: '#E5E7EB', marginBottom: 10 }} />
-            <div style={{ fontSize: 12, color: '#1B2A4A' }}>
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 12, color: '#6B5A3A' }}>
               Issued: {dateIssued || ' '}
             </div>
-            <div
-              style={{
-                fontSize: 11,
-                color: '#6B7280',
-                fontFamily: 'Courier, monospace',
-                marginTop: 4,
-                letterSpacing: '1px',
-              }}
-            >
-              {certificateCode || ' '}
-            </div>
+            {certificateCode && (
+              <div
+                style={{
+                  fontSize: 10,
+                  color: '#A89272',
+                  fontFamily: 'Courier, monospace',
+                  marginTop: 4,
+                  letterSpacing: '1.5px',
+                }}
+              >
+                {certificateCode}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ── SIGNATURES ── */}
+        {/* Signatures */}
         <div
           style={{
             width: '100%',
-            paddingTop: 16,
-            paddingBottom: 20,
+            borderTop: '1px solid #C8B48A',
+            paddingTop: 14,
             display: 'flex',
             justifyContent: 'space-around',
-            borderTop: '1px solid #E5E7EB',
           }}
         >
-          {/* Left signature */}
+          {/* Left: Founder */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 18, color: '#1B2A4A', fontFamily: 'cursive', marginBottom: 2, letterSpacing: '2px' }}>
-              _______________
-            </div>
+            <div
+              style={{
+                width: 140,
+                borderBottom: '1px solid #1B2A4A',
+                margin: '0 auto 6px',
+              }}
+            />
             <div style={{ fontSize: 13, fontWeight: 600, color: '#1B2A4A' }}>
               Gideon Owhonda
             </div>
-            <div style={{ fontSize: 11, color: '#6B7280' }}>
+            <div style={{ fontSize: 11, color: '#8C7654' }}>
               Founder &amp; CEO, Metabridge Academy
             </div>
           </div>
 
-          {/* Right signature */}
+          {/* Right: Instructor */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 18, color: '#1B2A4A', fontFamily: 'cursive', marginBottom: 2, letterSpacing: '2px' }}>
-              _______________
-            </div>
+            <div
+              style={{
+                width: 140,
+                borderBottom: '1px solid #1B2A4A',
+                margin: '0 auto 6px',
+              }}
+            />
             <div style={{ fontSize: 13, fontWeight: 600, color: '#1B2A4A' }}>
               Bright G. O
             </div>
-            <div style={{ fontSize: 11, color: '#6B7280' }}>
+            <div style={{ fontSize: 11, color: '#8C7654' }}>
               Lead Instructor, Metabridge Academy
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── QR CODE ── bottom-right */}
+      {/* ── QR CODE — bottom-right ── */}
       {qrDataUrl && (
         <div
           style={{
             position: 'absolute',
-            bottom: 20,
-            right: 20,
+            bottom: 22,
+            right: 24,
             textAlign: 'center',
-            zIndex: 3,
+            zIndex: 7,
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrDataUrl}
             alt="Scan to verify authenticity"
-            style={{ width: 80, height: 80, display: 'block' }}
+            style={{ width: 72, height: 72, display: 'block' }}
           />
-          <div style={{ fontSize: 9, color: '#6B7280', marginTop: 3 }}>
-            Scan to verify authenticity
+          <div style={{ fontSize: 8, color: '#A89272', marginTop: 2 }}>
+            Scan to verify
           </div>
         </div>
       )}
