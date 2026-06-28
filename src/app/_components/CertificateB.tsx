@@ -72,6 +72,29 @@ const SmallDiamond = ({ size = 10, color = '#29B6D8' }: { size?: number; color?:
   </svg>
 );
 
+const AcademySeal = ({ id }: { id: string }) => (
+  <svg width="84" height="84" viewBox="0 0 84 84" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <path id={id} d="M 42,42 m -34,0 a 34,34 0 1,1 68,0 a 34,34 0 1,1 -68,0" />
+    </defs>
+    <circle cx="42" cy="42" r="41" fill="rgba(27,42,74,0.06)" />
+    <circle cx="42" cy="42" r="41" fill="none" stroke="#1B2A4A" strokeWidth="2.5" />
+    <circle cx="42" cy="42" r="36.5" fill="none" stroke="#C9A84C" strokeWidth="1" opacity="0.85" />
+    <text fontSize="6.2" fill="#1B2A4A" fontFamily="Inter, Arial, sans-serif" fontWeight="700" letterSpacing="2.2">
+      <textPath href={`#${id}`} startOffset="3%">METABRIDGE ACADEMY • CERTIFIED •</textPath>
+    </text>
+    <circle cx="42" cy="42" r="25" fill="none" stroke="#1B2A4A" strokeWidth="1" />
+    <line x1="42" y1="17" x2="42" y2="21" stroke="#C9A84C" strokeWidth="2" />
+    <line x1="42" y1="63" x2="42" y2="67" stroke="#C9A84C" strokeWidth="2" />
+    <line x1="17" y1="42" x2="21" y2="42" stroke="#C9A84C" strokeWidth="2" />
+    <line x1="63" y1="42" x2="67" y2="42" stroke="#C9A84C" strokeWidth="2" />
+    <polygon points="42,23 52,28.5 52,39.5 42,45 32,39.5 32,28.5" fill="none" stroke="#C9A84C" strokeWidth="1.2" />
+    <text x="42" y="37" textAnchor="middle" fontSize="11" fontFamily="'Playfair Display', serif" fontWeight="700" fill="#1B2A4A">MA</text>
+    <line x1="30" y1="50" x2="54" y2="50" stroke="#C9A84C" strokeWidth="0.8" opacity="0.7" />
+    <text x="42" y="58" textAnchor="middle" fontSize="4.5" fontFamily="Inter, Arial, sans-serif" fill="#1B2A4A" letterSpacing="0.5" fontWeight="600">DIGITAL LITERACY</text>
+  </svg>
+);
+
 export default function CertificateB({
   candidateName,
   courseName,
@@ -453,6 +476,22 @@ export default function CertificateB({
               Lead Instructor, Metabridge Academy
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ── ACADEMY SEAL ── */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 22,
+          left: 26,
+          textAlign: 'center',
+          zIndex: 7,
+        }}
+      >
+        <AcademySeal id="seal-b" />
+        <div style={{ fontSize: 8, color: '#2B8A9C', marginTop: 2 }}>
+          Official Seal
         </div>
       </div>
 
