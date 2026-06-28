@@ -65,7 +65,7 @@ export default function GeneratePage() {
 
   async function handleGenerate() {
     if (!cohort.trim()) {
-      setError('Please enter the cohort (e.g. CO1).');
+      setError('Please enter the cohort (e.g. C1).');
       return;
     }
     if (!serialNumber.trim()) {
@@ -238,7 +238,7 @@ export default function GeneratePage() {
                   type="text"
                   value={cohort}
                   onChange={(e) => setCohort(e.target.value)}
-                  placeholder="e.g. CO1"
+                  placeholder="e.g. C1"
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal"
                 />
               </div>
