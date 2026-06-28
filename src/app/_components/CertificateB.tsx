@@ -156,7 +156,7 @@ export default function CertificateB({
             marginTop: 6,
           }}
         >
-          Gateway to Digital Literacy · Port Harcourt
+          Gateway to Digital Literacy
         </div>
 
         {/* Decorative divider */}

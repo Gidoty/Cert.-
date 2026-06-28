@@ -166,7 +166,7 @@ export default function CertificateA({
               marginTop: 6,
             }}
           >
-            Gateway to Digital Literacy · Port Harcourt
+            Gateway to Digital Literacy
           </div>
           <div
             style={{
