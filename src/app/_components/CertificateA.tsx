@@ -59,7 +59,7 @@ export default function CertificateA({
   useEffect(() => {
     if (!certificateCode) return;
     QRCode.toDataURL(
-      `https://metabridgeacademy.com/verify/${certificateCode}`,
+      `${window.location.origin}/verify/${certificateCode}`,
       {
         margin: 1,
         width: 100,
