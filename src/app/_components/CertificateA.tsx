@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
 import QRCode from 'qrcode';
 
+const BRIGHT_SIG_B64 = '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';
+
 interface CertificateAProps {
   candidateName: string;
   courseName: string;
@@ -342,6 +344,19 @@ export default function CertificateA({
           }}
         >
           <div style={{ textAlign: 'center' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`data:image/jpeg;base64,${BRIGHT_SIG_B64}`}
+              alt=""
+              style={{
+                width: 130,
+                height: 'auto',
+                display: 'block',
+                margin: '0 auto 2px',
+                mixBlendMode: 'multiply',
+                opacity: 0.9,
+              }}
+            />
             <div
               style={{
                 width: 140,

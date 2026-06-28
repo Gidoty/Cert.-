@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
 import QRCode from 'qrcode';
 
+const BRIGHT_SIG_B64 = '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';
+const GIDEON_SIG_B64 = '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';
+
 interface CertificateBProps {
   candidateName: string;
   courseName: string;
@@ -364,6 +367,19 @@ export default function CertificateB({
           }}
         >
           <div style={{ textAlign: 'center' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`data:image/jpeg;base64,${GIDEON_SIG_B64}`}
+              alt=""
+              style={{
+                width: 120,
+                height: 'auto',
+                display: 'block',
+                margin: '0 auto 2px',
+                mixBlendMode: 'multiply',
+                opacity: 0.9,
+              }}
+            />
             <div
               style={{
                 width: 140,
@@ -380,6 +396,19 @@ export default function CertificateB({
           </div>
 
           <div style={{ textAlign: 'center' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`data:image/jpeg;base64,${BRIGHT_SIG_B64}`}
+              alt=""
+              style={{
+                width: 120,
+                height: 'auto',
+                display: 'block',
+                margin: '0 auto 2px',
+                mixBlendMode: 'multiply',
+                opacity: 0.9,
+              }}
+            />
             <div
               style={{
                 width: 140,
