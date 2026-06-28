@@ -6,7 +6,11 @@ const config: Config = {
     extend: {
       colors: {
         navy: '#1B2A4A',
+        'navy-dark': '#0D1B35',
         teal: '#2B8A9C',
+        'teal-dark': '#1E6B7A',
+        cyan: '#29B6D8',
+        'cyan-bright': '#00D4FF',
         orange: '#F4891F',
       },
       fontFamily: {
