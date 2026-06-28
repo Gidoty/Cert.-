@@ -90,27 +90,24 @@ export default function GeneratePage() {
     setIsGenerating(true);
 
     const isDuplicate = await checkDuplicateCode(code);
-    if (isDuplicate) {
-      setError(`⚠️ Certificate code ${code} already exists. Please use a different serial number.`);
-      setIsGenerating(false);
-      return;
+
+    if (!isDuplicate) {
+      const parsedSerial = parseInt(serialNumber.replace(/^0+/, '') || '0', 10);
+      await saveCertificate({
+        certificate_code: code,
+        certificate_type:
+          certType === 'completion'
+            ? 'Certificate of Completion'
+            : 'Certificate of Achievement',
+        candidate_name: candidateName.trim(),
+        course_name: courseName,
+        cohort: cohort.trim(),
+        serial_number: parsedSerial,
+        year_issued: new Date().getFullYear(),
+        date_issued: dateIssued.trim(),
+      });
     }
-
-    const parsedSerial = parseInt(serialNumber.replace(/^0+/, '') || '0', 10);
-
-    await saveCertificate({
-      certificate_code: code,
-      certificate_type:
-        certType === 'completion'
-          ? 'Certificate of Completion'
-          : 'Certificate of Achievement',
-      candidate_name: candidateName.trim(),
-      course_name: courseName,
-      cohort: cohort.trim(),
-      serial_number: parsedSerial,
-      year_issued: new Date().getFullYear(),
-      date_issued: dateIssued.trim(),
-    });
+    // If duplicate, record already exists in Supabase (synced from Google Sheet) — skip save and proceed to print
 
     setGeneratedCode(code);
     setIsGenerated(true);
