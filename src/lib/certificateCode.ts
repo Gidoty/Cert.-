@@ -22,3 +22,11 @@ export async function saveCertificate(payload: {
   const { error } = await supabase.from('certificates').insert([payload]);
   if (error) throw error;
 }
+
+export async function updateTxHash(code: string, txHash: string): Promise<void> {
+  const { error } = await supabase
+    .from('certificates')
+    .update({ tx_hash: txHash })
+    .eq('certificate_code', code);
+  if (error) throw error;
+}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import AuthGuard, { clearAdminAuth } from '@/app/_components/AuthGuard';
 import CertificateA from '@/app/_components/CertificateA';
 import CertificateB from '@/app/_components/CertificateB';
-import { saveCertificate, checkDuplicateCode } from '@/lib/certificateCode';
+import { saveCertificate, checkDuplicateCode, updateTxHash } from '@/lib/certificateCode';
 import { useRouter } from 'next/navigation';
 
 type CertType = 'completion' | 'achievement';
@@ -39,6 +39,11 @@ export default function GeneratePage() {
   const [generatedCode, setGeneratedCode] = useState('');
   const [error, setError] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  // Blockchain state
+  const [blockchainStatus, setBlockchainStatus] = useState<'idle' | 'pending' | 'confirmed' | 'failed'>('idle');
+  const [txHash, setTxHash] = useState('');
+  const [polygonscanUrl, setPolygonscanUrl] = useState('');
 
   // Certificate code built live from form values — updates as Gideon types
   const yy = dateIssued.match(/\d{4}/)?.[0]?.slice(-2) ?? '';
@@ -112,6 +117,40 @@ export default function GeneratePage() {
     setGeneratedCode(code);
     setIsGenerated(true);
     setIsGenerating(false);
+
+    // ── Blockchain anchoring (non-blocking — runs after UI updates) ──
+    setBlockchainStatus('pending');
+    setTxHash('');
+    setPolygonscanUrl('');
+    try {
+      const res = await fetch('/api/blockchain/issue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          candidateName: candidateName.trim(),
+          courseName,
+          dateIssued: dateIssued.trim(),
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTxHash(data.txHash);
+        setPolygonscanUrl(data.polygonscan);
+        setBlockchainStatus('confirmed');
+        await updateTxHash(code, data.txHash).catch(() => {});
+      } else if (res.status === 409) {
+        // Already on-chain (re-issue of existing cert)
+        setBlockchainStatus('confirmed');
+      } else if (res.status === 503) {
+        // Blockchain not yet configured — silent skip
+        setBlockchainStatus('idle');
+      } else {
+        setBlockchainStatus('failed');
+      }
+    } catch {
+      setBlockchainStatus('failed');
+    }
   }
 
   function handleLogout() {
@@ -158,7 +197,39 @@ export default function GeneratePage() {
               <h2 className="text-green-700 font-bold text-lg">Certificate Generated Successfully</h2>
             </div>
             <p className="text-gray-600 text-sm mb-1">Certificate Code:</p>
-            <p className="font-mono text-navy font-bold text-xl mb-4">{generatedCode}</p>
+            <p className="font-mono text-navy font-bold text-xl mb-3">{generatedCode}</p>
+
+            {/* Blockchain status */}
+            {blockchainStatus === 'pending' && (
+              <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-4 py-2 mb-3">
+                <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <span className="text-purple-700 text-sm font-medium">Anchoring on Polygon blockchain…</span>
+              </div>
+            )}
+            {blockchainStatus === 'confirmed' && txHash && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg px-4 py-3 mb-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">⛓️</span>
+                  <span className="text-purple-700 text-sm font-bold">Anchored on Polygon Blockchain</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-1">Transaction Hash:</p>
+                <a
+                  href={polygonscanUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs text-purple-600 hover:underline break-all"
+                >
+                  {txHash}
+                </a>
+                <span className="ml-2 text-purple-400 text-xs">↗ Polygonscan</span>
+              </div>
+            )}
+            {blockchainStatus === 'failed' && (
+              <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 mb-3">
+                <span className="text-yellow-600 text-sm">⚠️ Blockchain anchoring failed — certificate is still valid in the database.</span>
+              </div>
+            )}
+
             <p className="text-gray-500 text-xs mb-4">
               Tip: In the print dialog, select <strong>Save as PDF</strong> and enable{' '}
               <strong>Background graphics</strong> for full colour.

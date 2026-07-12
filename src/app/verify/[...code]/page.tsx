@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { verifyOnChain, type BlockchainVerifyResult } from '@/lib/blockchain';
 
 interface Certificate {
   certificate_code: string;
@@ -12,6 +13,7 @@ interface Certificate {
   cohort: string;
   date_issued: string;
   year_issued: number;
+  tx_hash?: string;
 }
 
 function LoadingState() {
@@ -37,6 +39,8 @@ export default function VerifyPage() {
   const params = useParams();
   const [status, setStatus] = useState<'loading' | 'valid' | 'invalid'>('loading');
   const [certificate, setCertificate] = useState<Certificate | null>(null);
+  const [chainResult, setChainResult] = useState<BlockchainVerifyResult | null>(null);
+  const [chainLoading, setChainLoading] = useState(false);
 
   useEffect(() => {
     const rawCode = params.code;
@@ -68,8 +72,14 @@ export default function VerifyPage() {
         if (error || !data) {
           setStatus('invalid');
         } else {
-          setCertificate(data as Certificate);
+          const cert = data as Certificate;
+          setCertificate(cert);
           setStatus('valid');
+          // Run blockchain check after database lookup
+          setChainLoading(true);
+          verifyOnChain(code, cert.candidate_name, cert.course_name, cert.date_issued)
+            .then(result => { setChainResult(result); setChainLoading(false); })
+            .catch(() => setChainLoading(false));
         }
       });
   }, [params.code]);
@@ -169,6 +179,86 @@ export default function VerifyPage() {
           <p className="text-gray-400 text-xs italic text-center">
             Issued by Metabridge Academy, Port Harcourt
           </p>
+        </div>
+
+        {/* ── Blockchain Verification Section ── */}
+        <div className="mb-6">
+          {chainLoading && (
+            <div className="flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-xl px-5 py-4">
+              <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+              <div>
+                <p className="text-purple-700 text-sm font-semibold">Checking Polygon blockchain…</p>
+                <p className="text-purple-500 text-xs">Querying on-chain registry</p>
+              </div>
+            </div>
+          )}
+
+          {!chainLoading && chainResult?.status === 'verified' && (
+            <div className="bg-purple-50 border border-purple-200 rounded-xl px-5 py-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-base">⛓️</span>
+                </div>
+                <div>
+                  <p className="text-purple-800 font-bold text-sm">Blockchain Verified</p>
+                  <p className="text-purple-500 text-xs">Permanently recorded on Polygon blockchain — cannot be forged</p>
+                </div>
+              </div>
+              <div className="space-y-2 text-xs text-gray-600">
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-400 flex-shrink-0">Network</span>
+                  <span className="font-semibold text-purple-700">Polygon PoS Mainnet</span>
+                </div>
+                {chainResult.issuedAt && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-400 flex-shrink-0">On-chain timestamp</span>
+                    <span className="font-semibold">{chainResult.issuedAt.toUTCString()}</span>
+                  </div>
+                )}
+                {certificate?.tx_hash && (
+                  <div className="flex justify-between items-start gap-4">
+                    <span className="text-gray-400 flex-shrink-0">Tx hash</span>
+                    <a
+                      href={`https://polygonscan.com/tx/${certificate.tx_hash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-purple-600 hover:underline text-right break-all"
+                    >
+                      {certificate.tx_hash.slice(0, 20)}…{certificate.tx_hash.slice(-8)} ↗
+                    </a>
+                  </div>
+                )}
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-400 flex-shrink-0">Data integrity</span>
+                  <span className="text-green-600 font-semibold">✓ Hash matches certificate data</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!chainLoading && chainResult?.status === 'tampered' && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">⚠️</span>
+                <div>
+                  <p className="text-red-700 font-bold text-sm">Data Mismatch Detected</p>
+                  <p className="text-red-500 text-xs">The certificate data does not match what is recorded on the blockchain. This certificate may have been tampered with.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!chainLoading && chainResult?.status === 'not_found' && (
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
+              <div className="flex items-center gap-3">
+                <span className="text-gray-400 text-xl">🔗</span>
+                <div>
+                  <p className="text-gray-600 font-semibold text-sm">Database Verified</p>
+                  <p className="text-gray-400 text-xs">This certificate was issued before blockchain integration was enabled.</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer link */}
