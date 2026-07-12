@@ -13,6 +13,7 @@ interface CertificateBProps {
   dateIssued: string;
   certificateCode: string;
   divRef?: RefObject<HTMLDivElement>;
+  beltLevel?: 'blue' | 'black';
 }
 
 // Diagonal "METABRIDGE ACADEMY" watermark
@@ -34,7 +35,7 @@ const Watermark = ({ id }: { id: string }) => (
 );
 
 // Hex-grid background for body — more tech than dots
-const HexGrid = () => (
+const HexGrid = ({ stroke, opacity }: { stroke: string; opacity: number }) => (
   <svg
     style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
     xmlns="http://www.w3.org/2000/svg"
@@ -44,9 +45,9 @@ const HexGrid = () => (
         <polygon
           points="20,2 38,12 38,34 20,44 2,34 2,12"
           fill="none"
-          stroke="#1B2A4A"
+          stroke={stroke}
           strokeWidth="0.6"
-          opacity="0.07"
+          opacity={opacity}
         />
       </pattern>
     </defs>
@@ -101,8 +102,38 @@ export default function CertificateB({
   dateIssued,
   certificateCode,
   divRef,
+  beltLevel = 'blue',
 }: CertificateBProps) {
   const [qrDataUrl, setQrDataUrl] = useState('');
+
+  const isBlack = beltLevel === 'black';
+
+  // Theme tokens — swap the whole palette for Black Belt
+  const t = {
+    bg:           isBlack ? '#060810'                                                          : '#ECF3F7',
+    qrLight:      isBlack ? '#060810'                                                          : '#ECF3F7',
+    qrDark:       isBlack ? '#C9A84C'                                                          : '#0D1B35',
+    outerBorder:  isBlack ? '3px solid #C9A84C'                                               : '3px solid #1B2A4A',
+    midBorder:    isBlack ? '1.5px solid rgba(201,168,76,0.45)'                               : '1.5px solid rgba(201,168,76,0.6)',
+    innerBorder:  isBlack ? '1px solid rgba(201,168,76,0.15)'                                 : '1px solid rgba(41,182,216,0.2)',
+    headerRule:   isBlack ? 'linear-gradient(to right, transparent, #C9A84C, #E8C96A, transparent)' : 'linear-gradient(to right, transparent, #29B6D8, #00D4FF, transparent)',
+    hexStroke:    isBlack ? 'rgba(255,255,255,0.035)'                                         : '#1B2A4A',
+    bodyItalic:   isBlack ? '#8A96A8'                                                         : '#1E6B7A',
+    nameColor:    isBlack ? '#E8DCC8'                                                         : '#0D1B35',
+    goldRule:     isBlack ? 'linear-gradient(to right, #C9A84C, #E8C96A, #C9A84C)'           : 'linear-gradient(to right, #C9A84C, #E8C96A, #C9A84C)',
+    courseColor:  isBlack ? '#C9A84C'                                                         : '#1B2A4A',
+    subText:      isBlack ? '#6B7280'                                                         : '#2B8A9C',
+    dateColor:    isBlack ? '#8A96A8'                                                         : '#1E6B7A',
+    sigDivider:   isBlack ? '1px solid rgba(201,168,76,0.3)'                                  : '1px solid rgba(201,168,76,0.4)',
+    sigLine:      isBlack ? '#C9A84C'                                                         : '#1B2A4A',
+    sigName:      isBlack ? '#E8DCC8'                                                         : '#0D1B35',
+    sigRole:      isBlack ? '#8A96A8'                                                         : '#2B8A9C',
+    badgeBg:      isBlack ? '#0D0A00'                                                         : '#1e3a8a',
+    badgeDot:     isBlack ? '#C9A84C'                                                         : '#93C5FD',
+    badgeText:    isBlack ? '#C9A84C'                                                         : '#FFFFFF',
+    badgeLabel:   isBlack ? 'Black Belt — Mastery'                                            : 'Blue Belt — Professional',
+    cornerColor:  '#C9A84C',
+  };
 
   useEffect(() => {
     if (!certificateCode) return;
@@ -111,10 +142,11 @@ export default function CertificateB({
       {
         margin: 1,
         width: 100,
-        color: { dark: '#0D1B35', light: '#ECF3F7' },
+        color: { dark: t.qrDark, light: t.qrLight },
       }
     ).then((url) => setQrDataUrl(url));
-  }, [certificateCode]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [certificateCode, beltLevel]);
 
   const HEADER_H = 159;
 
@@ -124,7 +156,7 @@ export default function CertificateB({
       style={{
         width: 1122,
         height: 793,
-        backgroundColor: '#ECF3F7',
+        backgroundColor: t.bg,
         position: 'relative',
         overflow: 'hidden',
         fontFamily: 'var(--font-inter), Inter, sans-serif',
@@ -134,7 +166,7 @@ export default function CertificateB({
       <Watermark id="wm-b" />
 
       {/* ── Hex-grid background ── */}
-      <HexGrid />
+      <HexGrid stroke={t.hexStroke} opacity={isBlack ? 1 : 0.07} />
 
       {/* ── Header band ── */}
       <div
@@ -164,7 +196,7 @@ export default function CertificateB({
           }}
         />
 
-        {/* Bottom cyan rule */}
+        {/* Bottom header rule */}
         <div
           style={{
             position: 'absolute',
@@ -172,7 +204,7 @@ export default function CertificateB({
             left: 0,
             right: 0,
             height: 2,
-            background: 'linear-gradient(to right, transparent, #29B6D8, #00D4FF, transparent)',
+            background: t.headerRule,
           }}
         />
 
@@ -233,16 +265,16 @@ export default function CertificateB({
           />
         </div>
 
-        {/* Crimson badge for certificate type */}
+        {/* Belt badge */}
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: '#8B1A1A', borderRadius: 2, padding: '4px 14px', marginTop: 6,
+          background: t.badgeBg, borderRadius: 2, padding: '4px 14px', marginTop: 6,
         }}>
-          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C' }} />
-          <span style={{ fontSize: 10, color: '#FFFFFF', fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase' }}>
-            Certificate of Achievement
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: t.badgeDot }} />
+          <span style={{ fontSize: 10, color: t.badgeText, fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase' }}>
+            {t.badgeLabel}
           </span>
-          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C' }} />
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: t.badgeDot }} />
         </div>
 
         {/* Certificate code — top right inside header */}
@@ -264,34 +296,34 @@ export default function CertificateB({
         )}
       </div>
 
-      {/* ── Outer navy border ── */}
+      {/* ── Outer border ── */}
       <div
         style={{
           position: 'absolute',
           inset: 7,
-          border: '3px solid #1B2A4A',
+          border: t.outerBorder,
           pointerEvents: 'none',
           zIndex: 5,
         }}
       />
 
-      {/* ── Gold mid border ── */}
+      {/* ── Mid border ── */}
       <div
         style={{
           position: 'absolute',
           inset: 13,
-          border: '1.5px solid rgba(201,168,76,0.6)',
+          border: t.midBorder,
           pointerEvents: 'none',
           zIndex: 5,
         }}
       />
 
-      {/* ── Cyan inner border ── */}
+      {/* ── Inner border ── */}
       <div
         style={{
           position: 'absolute',
           inset: 19,
-          border: '1px solid rgba(41,182,216,0.2)',
+          border: t.innerBorder,
           pointerEvents: 'none',
           zIndex: 5,
         }}
@@ -341,7 +373,7 @@ export default function CertificateB({
           <div
             style={{
               fontSize: 13,
-              color: '#1E6B7A',
+              color: t.bodyItalic,
               fontStyle: 'italic',
               marginBottom: 12,
               letterSpacing: '0.5px',
@@ -356,7 +388,7 @@ export default function CertificateB({
               fontFamily: 'var(--font-playfair), "Playfair Display", serif',
               fontSize: 46,
               fontWeight: 700,
-              color: '#0D1B35',
+              color: t.nameColor,
               lineHeight: 1.2,
               minHeight: 65,
             }}
@@ -369,7 +401,7 @@ export default function CertificateB({
             style={{
               width: 150,
               height: 2,
-              background: 'linear-gradient(to right, #C9A84C, #E8C96A, #C9A84C)',
+              background: t.goldRule,
               margin: '12px auto 16px',
               borderRadius: 1,
             }}
@@ -378,7 +410,7 @@ export default function CertificateB({
           <div
             style={{
               fontSize: 13,
-              color: '#1E6B7A',
+              color: t.bodyItalic,
               fontStyle: 'italic',
               marginBottom: 8,
               maxWidth: 560,
@@ -393,19 +425,19 @@ export default function CertificateB({
               fontFamily: 'var(--font-playfair), "Playfair Display", serif',
               fontSize: 24,
               fontWeight: 700,
-              color: '#1B2A4A',
+              color: t.courseColor,
               marginBottom: 6,
             }}
           >
             {courseName || ' '}
           </div>
 
-          <div style={{ fontSize: 12, color: '#2B8A9C' }}>
+          <div style={{ fontSize: 12, color: t.subText }}>
             certification programme at Metabridge Academy
           </div>
 
           <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 12, color: '#1E6B7A' }}>
+            <div style={{ fontSize: 12, color: t.dateColor }}>
               Issued: {dateIssued || ' '}
             </div>
           </div>
@@ -415,7 +447,7 @@ export default function CertificateB({
         <div
           style={{
             width: '100%',
-            borderTop: '1px solid rgba(201,168,76,0.4)',
+            borderTop: t.sigDivider,
             paddingTop: 14,
             display: 'flex',
             flexDirection: 'row',
@@ -438,14 +470,14 @@ export default function CertificateB({
             <div
               style={{
                 width: 140,
-                borderBottom: '1px solid #1B2A4A',
+                borderBottom: `1px solid ${t.sigLine}`,
                 margin: '0 auto 6px',
               }}
             />
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#0D1B35' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: t.sigName }}>
               Gideon Owhonda
             </div>
-            <div style={{ fontSize: 11, color: '#2B8A9C' }}>
+            <div style={{ fontSize: 11, color: t.sigRole }}>
               Founder &amp; CEO, Metabridge Academy
             </div>
           </div>
@@ -465,14 +497,14 @@ export default function CertificateB({
             <div
               style={{
                 width: 140,
-                borderBottom: '1px solid #1B2A4A',
+                borderBottom: `1px solid ${t.sigLine}`,
                 margin: '0 auto 6px',
               }}
             />
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#0D1B35' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: t.sigName }}>
               Bright G. O
             </div>
-            <div style={{ fontSize: 11, color: '#2B8A9C' }}>
+            <div style={{ fontSize: 11, color: t.sigRole }}>
               Lead Instructor, Metabridge Academy
             </div>
           </div>

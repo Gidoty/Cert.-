@@ -229,16 +229,16 @@ export default function CertificateA({
               opacity: 0.7,
             }}
           />
-          {/* Crimson badge for certificate type */}
+          {/* Belt badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: '#8B1A1A', borderRadius: 2, padding: '4px 14px', marginTop: 6,
+            background: '#14532D', borderRadius: 2, padding: '4px 14px', marginTop: 6,
           }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C' }} />
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#86EFAC' }} />
             <span style={{ fontSize: 10, color: '#FFFFFF', fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase' }}>
-              Certificate of Completion
+              Green Belt — Foundation
             </span>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C' }} />
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#86EFAC' }} />
           </div>
         </div>
 

@@ -170,7 +170,17 @@ export default function VerifyPage() {
 
           <hr className="border-gray-200 mb-4" />
 
-          <DetailRow label="Certificate Type" value={certificate!.certificate_type} />
+          <div className="flex justify-between items-start gap-4 py-2 border-b border-gray-100">
+            <span className="text-gray-500 text-sm font-medium flex-shrink-0">Belt Level</span>
+            <span className={`text-xs font-bold px-3 py-1 rounded-full text-white ${
+              certificate!.certificate_type.startsWith('Green') ? 'bg-green-700' :
+              certificate!.certificate_type.startsWith('Blue')  ? 'bg-blue-800'  :
+              certificate!.certificate_type.startsWith('Black') ? 'bg-gray-900'  :
+              'bg-navy'
+            }`}>
+              {certificate!.certificate_type}
+            </span>
+          </div>
           <DetailRow label="Date Issued" value={certificate!.date_issued} />
           <DetailRow label="Cohort" value={certificate!.cohort} />
           <DetailRow label="Certificate Code" value={certificate!.certificate_code} mono />

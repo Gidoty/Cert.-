@@ -7,27 +7,63 @@ import CertificateB from '@/app/_components/CertificateB';
 import { saveCertificate, checkDuplicateCode, updateTxHash } from '@/lib/certificateCode';
 import { useRouter } from 'next/navigation';
 
-type CertType = 'completion' | 'achievement';
+type BeltLevel = 'green' | 'blue' | 'black';
 
-const COURSES: Record<CertType, string[]> = {
-  completion: [
+const BELT_META: Record<BeltLevel, { label: string; subtitle: string; color: string; borderColor: string; bgColor: string; dotColor: string; certType: string }> = {
+  green: {
+    label: 'Green Belt',
+    subtitle: 'Foundation',
+    color: '#14532D',
+    borderColor: '#16A34A',
+    bgColor: '#F0FDF4',
+    dotColor: '#86EFAC',
+    certType: 'Green Belt — Foundation',
+  },
+  blue: {
+    label: 'Blue Belt',
+    subtitle: 'Professional',
+    color: '#1e3a8a',
+    borderColor: '#3B82F6',
+    bgColor: '#EFF6FF',
+    dotColor: '#93C5FD',
+    certType: 'Blue Belt — Professional',
+  },
+  black: {
+    label: 'Black Belt',
+    subtitle: 'Mastery',
+    color: '#0D0A00',
+    borderColor: '#C9A84C',
+    bgColor: '#1C1400',
+    dotColor: '#C9A84C',
+    certType: 'Black Belt — Mastery',
+  },
+};
+
+const COURSES: Record<BeltLevel, string[]> = {
+  green: [
     'Cybersecurity Foundations',
     'Data Analytics Foundations',
     'Artificial Intelligence Foundations',
     'Blockchain Fundamentals',
   ],
-  achievement: [
-    'Cybersecurity',
-    'Data Analytics',
-    'Artificial Intelligence',
-    'Blockchain & Cryptocurrency',
+  blue: [
+    'Cybersecurity Professional',
+    'Data Analytics Professional',
+    'Artificial Intelligence Professional',
+    'Blockchain & Cryptocurrency Professional',
+  ],
+  black: [
+    'Advanced Cybersecurity',
+    'Advanced Data Analytics',
+    'Advanced Artificial Intelligence',
+    'Advanced Blockchain & Cryptocurrency',
   ],
 };
 
 export default function GeneratePage() {
   const router = useRouter();
 
-  const [certType, setCertType] = useState<CertType>('completion');
+  const [beltLevel, setBeltLevel] = useState<BeltLevel>('green');
   const [cohort, setCohort] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
   const [courseName, setCourseName] = useState('');
@@ -50,14 +86,14 @@ export default function GeneratePage() {
   const codePrefix = cohort.trim() && yy ? `MA/${cohort.trim()}/${yy}/` : '';
   const liveCode = codePrefix && serialNumber.trim() ? `${codePrefix}${serialNumber.trim()}` : '';
 
-  function handleCertTypeChange(val: CertType) {
-    setCertType(val);
+  function handleBeltChange(val: BeltLevel) {
+    setBeltLevel(val);
     setCourseName('');
     setIsGenerated(false);
   }
 
   function handleClearForm() {
-    setCertType('completion');
+    setBeltLevel('green');
     setCohort('');
     setSerialNumber('');
     setCourseName('');
@@ -100,10 +136,7 @@ export default function GeneratePage() {
       const parsedSerial = parseInt(serialNumber.replace(/^0+/, '') || '0', 10);
       await saveCertificate({
         certificate_code: code,
-        certificate_type:
-          certType === 'completion'
-            ? 'Certificate of Completion'
-            : 'Certificate of Achievement',
+        certificate_type: BELT_META[beltLevel].certType,
         candidate_name: candidateName.trim(),
         course_name: courseName,
         cohort: cohort.trim(),
@@ -282,19 +315,51 @@ export default function GeneratePage() {
             </h2>
 
             <div className="space-y-5">
-              {/* Certificate Type */}
+              {/* Belt Level Selector */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                  Certificate Type
+                <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                  Belt Level
                 </label>
-                <select
-                  value={certType}
-                  onChange={(e) => handleCertTypeChange(e.target.value as CertType)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal bg-white"
-                >
-                  <option value="completion">Certificate of Completion</option>
-                  <option value="achievement">Certificate of Achievement</option>
-                </select>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.entries(BELT_META) as [BeltLevel, typeof BELT_META['green']][]).map(([key, meta]) => {
+                    const selected = beltLevel === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => handleBeltChange(key)}
+                        style={{
+                          borderColor: selected ? meta.borderColor : '#E5E7EB',
+                          backgroundColor: selected ? meta.bgColor : '#FFFFFF',
+                        }}
+                        className="relative rounded-xl border-2 p-3 text-left transition-all cursor-pointer"
+                      >
+                        {/* Coloured top stripe */}
+                        <div
+                          className="h-1.5 w-10 rounded-full mb-2"
+                          style={{ background: meta.borderColor }}
+                        />
+                        <div
+                          className="font-bold text-xs leading-tight"
+                          style={{ color: selected ? meta.color : '#374151' }}
+                        >
+                          {meta.label}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-0.5">{meta.subtitle}</div>
+                        {selected && (
+                          <div
+                            className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
+                            style={{ background: meta.borderColor }}
+                          >
+                            <svg width="8" height="8" viewBox="0 0 10 8" fill="none">
+                              <path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Cohort */}
@@ -377,7 +442,7 @@ export default function GeneratePage() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal bg-white"
                 >
                   <option value="">— Select a course —</option>
-                  {COURSES[certType].map((c) => (
+                  {COURSES[beltLevel].map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -471,10 +536,10 @@ export default function GeneratePage() {
               <div className="certificate-preview-wrapper border border-gray-100 rounded shadow-sm">
                 <div className="certificate-preview-scale">
                   <div id="certificate-print-area">
-                    {certType === 'completion' ? (
+                    {beltLevel === 'green' ? (
                       <CertificateA {...certProps} />
                     ) : (
-                      <CertificateB {...certProps} />
+                      <CertificateB {...certProps} beltLevel={beltLevel} />
                     )}
                   </div>
                 </div>
@@ -509,10 +574,10 @@ export default function GeneratePage() {
             </div>
             <div className="p-4 overflow-auto">
               <div style={{ transform: 'scale(0.7)', transformOrigin: 'top left', width: 1122, height: 793 }}>
-                {certType === 'completion' ? (
+                {beltLevel === 'green' ? (
                   <CertificateA {...certProps} />
                 ) : (
-                  <CertificateB {...certProps} />
+                  <CertificateB {...certProps} beltLevel={beltLevel} />
                 )}
               </div>
             </div>
