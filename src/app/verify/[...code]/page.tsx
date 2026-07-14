@@ -204,14 +204,19 @@ export default function VerifyPage() {
           )}
 
           {!chainLoading && chainResult?.status === 'verified' && (
-            <div className="bg-purple-50 border border-purple-200 rounded-xl px-5 py-4">
+            <a
+              href={certificate?.tx_hash ? `https://polygonscan.com/tx/${certificate.tx_hash}` : 'https://polygonscan.com/address/0xA86b21B47A4082d973b1d5C5d12e09583D1D8032'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-purple-50 border border-purple-200 rounded-xl px-5 py-4 hover:bg-purple-100 transition cursor-pointer"
+            >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-9 h-9 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-base">⛓️</span>
                 </div>
-                <div>
-                  <p className="text-purple-800 font-bold text-sm">Blockchain Verified</p>
-                  <p className="text-purple-500 text-xs">Permanently recorded on Polygon blockchain — cannot be forged</p>
+                <div className="flex-1">
+                  <p className="text-purple-800 font-bold text-sm">Blockchain Verified ↗</p>
+                  <p className="text-purple-500 text-xs">Tap to view on Polygonscan — permanently recorded, cannot be forged</p>
                 </div>
               </div>
               <div className="space-y-2 text-xs text-gray-600">
@@ -228,14 +233,9 @@ export default function VerifyPage() {
                 {certificate?.tx_hash && (
                   <div className="flex justify-between items-start gap-4">
                     <span className="text-gray-400 flex-shrink-0">Tx hash</span>
-                    <a
-                      href={`https://polygonscan.com/tx/${certificate.tx_hash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-purple-600 hover:underline text-right break-all"
-                    >
-                      {certificate.tx_hash.slice(0, 20)}…{certificate.tx_hash.slice(-8)} ↗
-                    </a>
+                    <span className="font-mono text-purple-600 text-right break-all">
+                      {certificate.tx_hash.slice(0, 20)}…{certificate.tx_hash.slice(-8)}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between gap-4">
@@ -243,7 +243,7 @@ export default function VerifyPage() {
                   <span className="text-green-600 font-semibold">✓ Hash matches certificate data</span>
                 </div>
               </div>
-            </div>
+            </a>
           )}
 
           {!chainLoading && chainResult?.status === 'tampered' && (
