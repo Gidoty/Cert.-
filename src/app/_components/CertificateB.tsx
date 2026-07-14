@@ -108,31 +108,31 @@ export default function CertificateB({
 
   const isBlack = beltLevel === 'black';
 
-  // Theme tokens — swap the whole palette for Black Belt
+  // Shared palette for all belt levels — only the badge differs
   const t = {
-    bg:           isBlack ? '#060810'                                                          : '#ECF3F7',
-    qrLight:      isBlack ? '#060810'                                                          : '#ECF3F7',
-    qrDark:       isBlack ? '#C9A84C'                                                          : '#0D1B35',
-    outerBorder:  isBlack ? '3px solid #C9A84C'                                               : '3px solid #1B2A4A',
-    midBorder:    isBlack ? '1.5px solid rgba(201,168,76,0.45)'                               : '1.5px solid rgba(201,168,76,0.6)',
-    innerBorder:  isBlack ? '1px solid rgba(201,168,76,0.15)'                                 : '1px solid rgba(41,182,216,0.2)',
-    headerRule:   isBlack ? 'linear-gradient(to right, transparent, #C9A84C, #E8C96A, transparent)' : 'linear-gradient(to right, transparent, #29B6D8, #00D4FF, transparent)',
-    hexStroke:    isBlack ? 'rgba(255,255,255,0.035)'                                         : '#1B2A4A',
-    bodyItalic:   isBlack ? '#8A96A8'                                                         : '#1E6B7A',
-    nameColor:    isBlack ? '#E8DCC8'                                                         : '#0D1B35',
-    goldRule:     isBlack ? 'linear-gradient(to right, #C9A84C, #E8C96A, #C9A84C)'           : 'linear-gradient(to right, #C9A84C, #E8C96A, #C9A84C)',
-    courseColor:  isBlack ? '#C9A84C'                                                         : '#1B2A4A',
-    subText:      isBlack ? '#6B7280'                                                         : '#2B8A9C',
-    dateColor:    isBlack ? '#8A96A8'                                                         : '#1E6B7A',
-    sigDivider:   isBlack ? '1px solid rgba(201,168,76,0.3)'                                  : '1px solid rgba(201,168,76,0.4)',
-    sigLine:      isBlack ? '#C9A84C'                                                         : '#1B2A4A',
-    sigName:      isBlack ? '#E8DCC8'                                                         : '#0D1B35',
-    sigRole:      isBlack ? '#8A96A8'                                                         : '#2B8A9C',
-    badgeBg:      isBlack ? '#0D0A00'                                                         : '#1e3a8a',
-    badgeDot:     isBlack ? '#C9A84C'                                                         : '#93C5FD',
-    badgeText:    isBlack ? '#C9A84C'                                                         : '#FFFFFF',
-    badgeLabel:   isBlack ? 'Black Belt — Mastery'                                            : 'Blue Belt — Professional',
-    cornerColor:  '#C9A84C',
+    bg:          '#ECF3F7',
+    qrLight:     '#ECF3F7',
+    qrDark:      '#0D1B35',
+    outerBorder: '3px solid #1B2A4A',
+    midBorder:   '1.5px solid rgba(201,168,76,0.6)',
+    innerBorder: '1px solid rgba(41,182,216,0.2)',
+    headerRule:  'linear-gradient(to right, transparent, #29B6D8, #00D4FF, transparent)',
+    hexStroke:   '#1B2A4A',
+    bodyItalic:  '#1E6B7A',
+    nameColor:   '#0D1B35',
+    goldRule:    'linear-gradient(to right, #C9A84C, #E8C96A, #C9A84C)',
+    courseColor: '#1B2A4A',
+    subText:     '#2B8A9C',
+    dateColor:   '#1E6B7A',
+    sigDivider:  '1px solid rgba(201,168,76,0.4)',
+    sigLine:     '#1B2A4A',
+    sigName:     '#0D1B35',
+    sigRole:     '#2B8A9C',
+    badgeBg:     isBlack ? '#0D0A00' : '#1e3a8a',
+    badgeDot:    isBlack ? '#C9A84C' : '#93C5FD',
+    badgeText:   isBlack ? '#C9A84C' : '#FFFFFF',
+    badgeLabel:  isBlack ? 'Black Belt — Mastery' : 'Blue Belt — Professional',
+    cornerColor: '#C9A84C',
   };
 
   useEffect(() => {
@@ -166,7 +166,7 @@ export default function CertificateB({
       <Watermark id="wm-b" />
 
       {/* ── Hex-grid background ── */}
-      <HexGrid stroke={t.hexStroke} opacity={isBlack ? 1 : 0.07} />
+      <HexGrid stroke={t.hexStroke} opacity={0.07} />
 
       {/* ── Header band ── */}
       <div
