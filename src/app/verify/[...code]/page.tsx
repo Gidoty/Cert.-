@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { verifyOnChain, type BlockchainVerifyResult } from '@/lib/blockchain';
+import type { BlockchainVerifyResult } from '@/lib/blockchain';
 
 interface Certificate {
   certificate_code: string;
@@ -75,10 +75,26 @@ export default function VerifyPage() {
           const cert = data as Certificate;
           setCertificate(cert);
           setStatus('valid');
-          // Run blockchain check after database lookup
+          // Run blockchain check via server route (uses Alchemy — more reliable)
           setChainLoading(true);
-          verifyOnChain(code, cert.candidate_name, cert.course_name, cert.date_issued)
-            .then(result => { setChainResult(result); setChainLoading(false); })
+          fetch('/api/blockchain/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              code,
+              candidateName: cert.candidate_name,
+              courseName: cert.course_name,
+              dateIssued: cert.date_issued,
+            }),
+          })
+            .then(r => r.json())
+            .then((result: BlockchainVerifyResult & { issuedAt?: string }) => {
+              setChainResult({
+                ...result,
+                issuedAt: result.issuedAt ? new Date(result.issuedAt) : undefined,
+              });
+              setChainLoading(false);
+            })
             .catch(() => setChainLoading(false));
         }
       });
