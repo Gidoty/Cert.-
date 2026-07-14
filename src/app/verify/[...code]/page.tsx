@@ -269,6 +269,30 @@ export default function VerifyPage() {
               </div>
             </div>
           )}
+
+          {!chainLoading && chainResult?.status === 'error' && (
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
+              <div className="flex items-center gap-3">
+                <span className="text-gray-400 text-xl">🔗</span>
+                <div>
+                  <p className="text-gray-600 font-semibold text-sm">Database Verified</p>
+                  <p className="text-gray-400 text-xs">Blockchain check unavailable — certificate is verified in our database.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!chainLoading && !chainResult && (
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
+              <div className="flex items-center gap-3">
+                <span className="text-gray-400 text-xl">🔗</span>
+                <div>
+                  <p className="text-gray-600 font-semibold text-sm">Database Verified</p>
+                  <p className="text-gray-400 text-xs">This certificate was issued before blockchain integration was enabled.</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer link */}
