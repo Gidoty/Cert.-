@@ -122,8 +122,8 @@ export default function GeneratePage() {
     setError('');
     setIsGenerating(true);
 
-    // Auto-assign next serial number for this cohort (3-digit padded)
-    const serial = await getNextSerial(cohort.trim());
+    // Auto-assign next serial number globally across all cohorts (3-digit padded)
+    const serial = await getNextSerial();
     const paddedSerial = String(serial).padStart(3, '0');
     const yearSuffix = dateIssued.match(/\d{4}/)?.[0]?.slice(-2) ?? String(new Date().getFullYear()).slice(-2);
     const code = `MA/${cohort.trim()}/${yearSuffix}/${paddedSerial}`;

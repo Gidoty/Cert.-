@@ -1,10 +1,9 @@
 import { supabase } from './supabase';
 
-export async function getNextSerial(cohort: string): Promise<number> {
+export async function getNextSerial(): Promise<number> {
   const { data } = await supabase
     .from('certificates')
     .select('serial_number')
-    .eq('cohort', cohort)
     .order('serial_number', { ascending: false })
     .limit(1)
     .maybeSingle();
