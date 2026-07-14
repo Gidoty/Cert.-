@@ -1,5 +1,16 @@
 import { supabase } from './supabase';
 
+export async function getNextSerial(cohort: string): Promise<number> {
+  const { data } = await supabase
+    .from('certificates')
+    .select('serial_number')
+    .eq('cohort', cohort)
+    .order('serial_number', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ? (data.serial_number as number) + 1 : 1;
+}
+
 export async function checkDuplicateCode(code: string): Promise<boolean> {
   const { data } = await supabase
     .from('certificates')

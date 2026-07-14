@@ -4,7 +4,7 @@ import { useState } from 'react';
 import AuthGuard, { clearAdminAuth } from '@/app/_components/AuthGuard';
 import CertificateA from '@/app/_components/CertificateA';
 import CertificateB from '@/app/_components/CertificateB';
-import { saveCertificate, checkDuplicateCode, updateTxHash } from '@/lib/certificateCode';
+import { saveCertificate, checkDuplicateCode, updateTxHash, getNextSerial } from '@/lib/certificateCode';
 import { useRouter } from 'next/navigation';
 
 type BeltLevel = 'green' | 'blue' | 'black';
@@ -65,7 +65,6 @@ export default function GeneratePage() {
 
   const [beltLevel, setBeltLevel] = useState<BeltLevel>('green');
   const [cohort, setCohort] = useState('');
-  const [serialNumber, setSerialNumber] = useState('');
   const [courseName, setCourseName] = useState('');
   const [candidateName, setCandidateName] = useState('');
   const [dateIssued, setDateIssued] = useState('');
@@ -81,10 +80,9 @@ export default function GeneratePage() {
   const [txHash, setTxHash] = useState('');
   const [polygonscanUrl, setPolygonscanUrl] = useState('');
 
-  // Certificate code built live from form values — updates as Gideon types
+  // Code prefix shown live — serial assigned automatically at save time
   const yy = dateIssued.match(/\d{4}/)?.[0]?.slice(-2) ?? '';
   const codePrefix = cohort.trim() && yy ? `MA/${cohort.trim()}/${yy}/` : '';
-  const liveCode = codePrefix && serialNumber.trim() ? `${codePrefix}${serialNumber.trim()}` : '';
 
   function handleBeltChange(val: BeltLevel) {
     setBeltLevel(val);
@@ -95,7 +93,6 @@ export default function GeneratePage() {
   function handleClearForm() {
     setBeltLevel('green');
     setCohort('');
-    setSerialNumber('');
     setCourseName('');
     setCandidateName('');
     setDateIssued('');
@@ -109,10 +106,6 @@ export default function GeneratePage() {
       setError('Please enter the cohort (e.g. C1).');
       return;
     }
-    if (!serialNumber.trim()) {
-      setError('Please enter the serial number (e.g. 00001).');
-      return;
-    }
     if (!candidateName.trim()) {
       setError('Please enter the candidate full name.');
       return;
@@ -122,25 +115,29 @@ export default function GeneratePage() {
       return;
     }
     if (!dateIssued.trim()) {
-      setError('Please enter the date of issue (e.g. June, 2026).');
+      setError('Please enter the date of issue (e.g. August, 2026).');
       return;
     }
 
-    const code = liveCode;
     setError('');
     setIsGenerating(true);
+
+    // Auto-assign next serial number for this cohort (3-digit padded)
+    const serial = await getNextSerial(cohort.trim());
+    const paddedSerial = String(serial).padStart(3, '0');
+    const yearSuffix = dateIssued.match(/\d{4}/)?.[0]?.slice(-2) ?? String(new Date().getFullYear()).slice(-2);
+    const code = `MA/${cohort.trim()}/${yearSuffix}/${paddedSerial}`;
 
     const isDuplicate = await checkDuplicateCode(code);
 
     if (!isDuplicate) {
-      const parsedSerial = parseInt(serialNumber.replace(/^0+/, '') || '0', 10);
       await saveCertificate({
         certificate_code: code,
         certificate_type: BELT_META[beltLevel].certType,
         candidate_name: candidateName.trim(),
         course_name: courseName,
         cohort: cohort.trim(),
-        serial_number: parsedSerial,
+        serial_number: serial,
         year_issued: new Date().getFullYear(),
         date_issued: dateIssued.trim(),
       });
@@ -195,7 +192,7 @@ export default function GeneratePage() {
     candidateName: candidateName || 'Candidate Full Name',
     courseName: courseName || 'Course Name',
     dateIssued,
-    certificateCode: liveCode,
+    certificateCode: generatedCode, // only populated after save — QR appears then
   };
 
   return (
@@ -390,44 +387,18 @@ export default function GeneratePage() {
                 />
               </div>
 
-              {/* Certificate Code Prefix — read-only, derived from cohort + year in date */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                  Certificate Code Prefix
-                </label>
-                <input
-                  type="text"
-                  readOnly
-                  value={codePrefix || 'Fill in Cohort and Date of Issue above'}
-                  className={`w-full border rounded-lg px-4 py-3 font-mono text-sm focus:outline-none cursor-default select-all ${
-                    codePrefix
-                      ? 'border-navy/30 bg-navy/5 text-navy font-bold'
-                      : 'border-gray-200 bg-gray-50 text-gray-400 italic'
-                  }`}
-                />
-              </div>
-
-              {/* Serial Number */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                  Serial Number
-                </label>
-                <input
-                  type="text"
-                  value={serialNumber}
-                  onChange={(e) => setSerialNumber(e.target.value)}
-                  placeholder="e.g. 00001"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal font-mono"
-                />
-              </div>
-
-              {/* Full certificate code — live once prefix + serial are present */}
-              {liveCode && (
+              {/* Auto certificate code preview */}
+              {codePrefix && (
                 <div className="bg-navy/5 border border-navy/20 rounded-lg px-4 py-3">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">
-                    Full Certificate Code
+                    Certificate Code (auto-assigned)
                   </p>
-                  <p className="font-mono text-navy font-bold text-lg">{liveCode}</p>
+                  <p className="font-mono text-navy font-bold text-lg">
+                    {codePrefix}<span className="text-gray-400">###</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Serial number assigned automatically — next in sequence for cohort {cohort.trim()}
+                  </p>
                 </div>
               )}
 
