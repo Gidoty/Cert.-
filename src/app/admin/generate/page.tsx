@@ -156,7 +156,16 @@ export default function GeneratePage() {
       await downloadCertificatePDF(certificateRef, code);
       setIsGenerated(true);
     } catch (err) {
-      setError(`Error: ${err instanceof Error ? err.message : 'Something went wrong.'}`);
+      let msg = 'Unknown error';
+      if (err instanceof Error) {
+        msg = err.message;
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        msg = String((err as { message: unknown }).message);
+        if ('code' in err) msg += ` (code: ${(err as { code: unknown }).code})`;
+      } else {
+        msg = JSON.stringify(err);
+      }
+      setError(`Error: ${msg}`);
     } finally {
       setIsGenerating(false);
     }
