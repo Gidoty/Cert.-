@@ -6,10 +6,10 @@ body {
   font-family: var(--font-inter), sans-serif;
 }
 
-/* Certificate preview scaling utilities */
+/* Certificate preview scaling — portrait A4 (794×1122) scaled to fit panel */
 .certificate-preview-wrapper {
-  width: 505px;
-  height: 357px;
+  width: 357px;
+  height: 505px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
