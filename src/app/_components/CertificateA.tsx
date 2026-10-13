@@ -30,6 +30,49 @@ const CERT_TITLE: Record<BeltLevel, string> = {
 
 const ACK = 'In recognition of demonstrated technical competence, practical excellence, and commitment to building future-ready capabilities through digital technology.';
 
+/**
+ * Strips the paper background from a signature photo using canvas pixel thresholding.
+ * Light pixels (brightness > 200) become fully transparent; dark ink pixels are kept.
+ * Returns a PNG data URL with only the ink visible.
+ */
+function useExtractedSignature(src: string): string {
+  const [dataUrl, setDataUrl] = useState('');
+
+  useEffect(() => {
+    if (!src) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imageData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const brightness = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114);
+        if (brightness > 200) {
+          // Paper / background → transparent
+          d[i + 3] = 0;
+        } else {
+          // Ink → keep dark, map to navy tone
+          const strength = Math.min(1, (200 - brightness) / 140);
+          d[i]     = Math.round(27  + (d[i]     - 27)  * (1 - strength));
+          d[i + 1] = Math.round(42  + (d[i + 1] - 42)  * (1 - strength));
+          d[i + 2] = Math.round(74  + (d[i + 2] - 74)  * (1 - strength));
+          d[i + 3] = Math.round(255 * strength);
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      setDataUrl(canvas.toDataURL('image/png'));
+    };
+    img.src = src;
+  }, [src]);
+
+  return dataUrl;
+}
+
 const MetabridgeSeal = () => (
   <svg width="120" height="120" viewBox="0 0 200 200" style={{ display: 'block' }}>
     <circle cx="100" cy="100" r="96" fill="none" stroke="#C9A84C" strokeWidth="2.5"/>
@@ -66,18 +109,6 @@ const MetabridgeSeal = () => (
   </svg>
 );
 
-const CornerBracket = ({ rotate }: { rotate: number }) => (
-  <svg width="52" height="52" viewBox="0 0 58 58"
-    style={{ display: 'block', transform: `rotate(${rotate}deg)` }}>
-    <path d="M5 5 L28 5 L5 28 Z" fill="none" stroke="#C9A84C" strokeWidth="1.5"/>
-    <path d="M5 5 L20 5 L5 20 Z" fill="rgba(201,168,76,0.2)"/>
-    <path d="M5 5 Q15 5 15 15" fill="none" stroke="#C9A84C" strokeWidth="0.8"/>
-    <circle cx="5" cy="5" r="2.8" fill="#C9A84C"/>
-    <circle cx="26" cy="5" r="1.1" fill="rgba(201,168,76,0.6)"/>
-    <circle cx="5" cy="26" r="1.1" fill="rgba(201,168,76,0.6)"/>
-  </svg>
-);
-
 const Diamond = ({ size = 8, color = '#C9A84C' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 16 16"
     style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}>
@@ -95,6 +126,8 @@ export default function CertificateA({
   divRef,
 }: CertificateAProps) {
   const [qrDataUrl, setQrDataUrl] = useState('');
+  const ceoSig = useExtractedSignature('/signatures/ceo.jpg');
+  const instructorSig = useExtractedSignature('/signatures/instructor.jpg');
 
   useEffect(() => {
     if (!certificateCode) return;
@@ -120,34 +153,26 @@ export default function CertificateA({
         `,
       }}
     >
-      {/* Borders */}
-      <div style={{ position:'absolute', inset:10, border:'2.5px solid #C9A84C', pointerEvents:'none', zIndex:6 }}/>
-      <div style={{ position:'absolute', inset:17, border:'0.75px solid rgba(27,42,74,0.22)', pointerEvents:'none', zIndex:6 }}/>
-      <div style={{ position:'absolute', inset:22, border:'0.4px solid rgba(201,168,76,0.28)', pointerEvents:'none', zIndex:6 }}/>
+      {/* Single clean gold border */}
+      <div style={{ position:'absolute', inset:10, border:'1.5px solid #C9A84C', pointerEvents:'none', zIndex:6 }}/>
 
       {/* Gold top bar */}
       <div style={{
-        position:'absolute', top:0, left:0, right:0, height:7,
+        position:'absolute', top:0, left:0, right:0, height:6,
         background:'linear-gradient(to right, #E8C96A, #C9A84C 30%, #F4891F 55%, #C9A84C 75%, #E8C96A)',
         zIndex:10,
       }}/>
       {/* Gold bottom bar */}
       <div style={{
-        position:'absolute', bottom:0, left:0, right:0, height:7,
+        position:'absolute', bottom:0, left:0, right:0, height:6,
         background:'linear-gradient(to right, #E8C96A, #C9A84C 30%, #F4891F 55%, #C9A84C 75%, #E8C96A)',
         zIndex:10,
       }}/>
 
-      {/* Corner ornaments */}
-      <div style={{ position:'absolute', top:10, left:10, zIndex:9 }}><CornerBracket rotate={0}/></div>
-      <div style={{ position:'absolute', top:10, right:10, zIndex:9 }}><CornerBracket rotate={90}/></div>
-      <div style={{ position:'absolute', bottom:10, right:10, zIndex:9 }}><CornerBracket rotate={180}/></div>
-      <div style={{ position:'absolute', bottom:10, left:10, zIndex:9 }}><CornerBracket rotate={270}/></div>
-
       {/* Certificate code top-left (subtle) */}
       {certificateCode && (
         <div style={{
-          position:'absolute', top:26, left:30,
+          position:'absolute', top:20, left:24,
           fontSize:7, color:'rgba(27,42,74,0.3)', fontFamily:'Courier, monospace',
           letterSpacing:'1.5px', zIndex:4,
         }}>
@@ -157,7 +182,7 @@ export default function CertificateA({
 
       {/* Body */}
       <div style={{
-        position:'absolute', inset:7,
+        position:'absolute', inset:6,
         display:'flex', flexDirection:'column', alignItems:'center',
         padding:'28px 60px 12px',
         zIndex:3,
@@ -276,20 +301,16 @@ export default function CertificateA({
           width:'100%', display:'flex', justifyContent:'space-between', alignItems:'flex-end',
           paddingTop:6, marginTop:4,
         }}>
-          {/* Left signature — CEO */}
+          {/* Left — CEO */}
           <div style={{ textAlign:'center', width:170 }}>
-            <div style={{ height:46, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:4 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/signatures/ceo.jpg"
-                alt="CEO signature"
-                style={{
-                  width:140, height:44, objectFit:'contain', objectPosition:'bottom',
-                  mixBlendMode:'multiply',
-                  filter:'grayscale(1) contrast(4.5) brightness(0.9)',
-                  display:'block',
-                }}
-              />
+            <div style={{ height:50, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:4 }}>
+              {ceoSig ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={ceoSig} alt="CEO signature"
+                  style={{ width:150, height:48, objectFit:'contain', objectPosition:'bottom', display:'block' }}/>
+              ) : (
+                <div style={{ width:150, height:48 }}/>
+              )}
             </div>
             <div style={{ width:158, height:1, background:'linear-gradient(to right, transparent, #C9A84C, transparent)', margin:'0 auto 4px' }}/>
             <div style={{ fontSize:10.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Gideon Owhonda</div>
@@ -301,23 +322,19 @@ export default function CertificateA({
             <MetabridgeSeal/>
           </div>
 
-          {/* Right signature — Lead Instructor */}
+          {/* Right — Lead Instructor */}
           <div style={{ textAlign:'center', width:170 }}>
-            <div style={{ height:46, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:4 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/signatures/instructor.jpg"
-                alt="Lead Instructor signature"
-                style={{
-                  width:140, height:44, objectFit:'contain', objectPosition:'bottom',
-                  mixBlendMode:'multiply',
-                  filter:'grayscale(1) contrast(4.5) brightness(0.9)',
-                  display:'block',
-                }}
-              />
+            <div style={{ height:50, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:4 }}>
+              {instructorSig ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={instructorSig} alt="Lead Instructor signature"
+                  style={{ width:150, height:48, objectFit:'contain', objectPosition:'bottom', display:'block' }}/>
+              ) : (
+                <div style={{ width:150, height:48 }}/>
+              )}
             </div>
             <div style={{ width:158, height:1, background:'linear-gradient(to right, transparent, #C9A84C, transparent)', margin:'0 auto 4px' }}/>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Bright Francis Etokudut</div>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Bright G.O</div>
             <div style={{ fontSize:8.5, color:'#8C7654', marginTop:1 }}>Lead Instructor, Metabridge Academy</div>
           </div>
         </div>
