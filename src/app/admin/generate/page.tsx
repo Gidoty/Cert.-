@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import AuthGuard, { clearAdminAuth } from '@/app/_components/AuthGuard';
 import CertificateA from '@/app/_components/CertificateA';
-import CertificateB from '@/app/_components/CertificateB';
 import {
   getNextSerial,
   buildCertificateCode,
@@ -48,10 +47,11 @@ const BELT_LABEL: Record<BeltLevel, string> = {
   'Black Belt': 'Black Belt (Mastery)',
 };
 
-function getDateIssued(): string {
-  const now = new Date();
-  return `${now.toLocaleString('en-US', { month: 'long' })}, ${now.getFullYear()}`;
-}
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
+const YEARS = Array.from({ length: 8 }, (_, i) => 2024 + i);
 
 export default function GeneratePage() {
   const router = useRouter();
@@ -70,7 +70,9 @@ export default function GeneratePage() {
   const [courseName, setCourseName] = useState('');
   const [candidateName, setCandidateName] = useState('');
   const [studentId, setStudentId] = useState('');
-  const dateIssued = getDateIssued();
+  const [issueMonth, setIssueMonth] = useState(() => new Date().toLocaleString('en-US', { month: 'long' }));
+  const [issueYear, setIssueYear] = useState(() => new Date().getFullYear());
+  const dateIssued = `${issueMonth}, ${issueYear}`;
 
   // State
   const [certificateCode, setCertificateCode] = useState('');
@@ -121,6 +123,8 @@ export default function GeneratePage() {
     setCertificateCode('');
     setIsGenerated(false);
     setError('');
+    setIssueMonth(new Date().toLocaleString('en-US', { month: 'long' }));
+    setIssueYear(new Date().getFullYear());
   }
 
   async function handleGenerate() {
@@ -129,7 +133,7 @@ export default function GeneratePage() {
     setError('');
     setIsGenerating(true);
     try {
-      const year = new Date().getFullYear();
+      const year = issueYear;
       const cohortVal = cohort || 'C1';
       const serial = await getNextSerial();
       const code = buildCertificateCode(cohortVal, year, serial);
@@ -161,8 +165,6 @@ export default function GeneratePage() {
     if (!certificateCode) return;
     await downloadCertificatePDF(certificateRef, certificateCode);
   }
-
-  const isGreen = beltLevel === 'Green Belt';
 
   const certProps = {
     candidateName: candidateName || 'Candidate Full Name',
@@ -320,11 +322,20 @@ export default function GeneratePage() {
                 </div>
               )}
 
-              {/* Date of Issue */}
+              {/* Date of Issue — editable */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">Date of Issue</label>
-                <input type="text" value={dateIssued} readOnly
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-500 bg-gray-50 cursor-not-allowed"/>
+                <div className="grid grid-cols-2 gap-3">
+                  <select value={issueMonth} onChange={e => setIssueMonth(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal bg-white">
+                    {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                  <select value={issueYear} onChange={e => setIssueYear(Number(e.target.value))}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal bg-white">
+                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Will appear as: <span className="font-medium text-gray-600">{dateIssued}</span></p>
               </div>
 
               {certificateCode && (
@@ -363,10 +374,7 @@ export default function GeneratePage() {
             <div className="flex justify-center">
               <div className="certificate-preview-wrapper border border-gray-100 rounded shadow-sm">
                 <div className="certificate-preview-scale">
-                  {isGreen
-                    ? <CertificateA {...certProps} divRef={certificateRef}/>
-                    : <CertificateB {...certProps} beltLevel={beltLevel as 'Blue Belt' | 'Black Belt'} divRef={certificateRef}/>
-                  }
+                  <CertificateA {...certProps} beltLevel={beltLevel} divRef={certificateRef}/>
                 </div>
               </div>
             </div>
@@ -388,10 +396,7 @@ export default function GeneratePage() {
             </div>
             <div className="p-4 overflow-auto">
               <div style={{ transform:'scale(0.65)', transformOrigin:'top left', width:794, height:1122 }}>
-                {isGreen
-                  ? <CertificateA {...certProps}/>
-                  : <CertificateB {...certProps} beltLevel={beltLevel as 'Blue Belt' | 'Black Belt'}/>
-                }
+                <CertificateA {...certProps} beltLevel={beltLevel}/>
               </div>
             </div>
           </div>
