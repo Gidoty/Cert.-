@@ -139,7 +139,8 @@ export default function GeneratePage() {
       const code = buildCertificateCode(cohortVal, year, serial);
       setCertificateCode(code);
 
-      await new Promise(r => setTimeout(r, 700));
+      // Wait for React to re-render with new code, then for QR code async generation to complete
+      await new Promise(r => setTimeout(r, 1800));
 
       await saveCertificate({
         certificate_code: code,
@@ -378,7 +379,7 @@ export default function GeneratePage() {
                 </div>
               </div>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-4">PDF will be A4 portrait at full resolution</p>
+            <p className="text-xs text-gray-400 text-center mt-4">QR code appears after generating · PDF saved as 210×210mm square</p>
           </div>
         </div>
       </main>

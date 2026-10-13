@@ -290,12 +290,12 @@ export default function CertificateA({
         </div>
       </div>
 
-      {/* QR code */}
+      {/* QR code — bottom-right, clear of right signature */}
       {qrDataUrl && (
-        <div style={{ position:'absolute', bottom:14, right:18, textAlign:'center', zIndex:7 }}>
+        <div style={{ position:'absolute', bottom:16, right:22, textAlign:'center', zIndex:8 }}>
           <img src={qrDataUrl} alt="Scan to verify"
-            style={{ width:58, height:58, display:'block', border:'1px solid rgba(201,168,76,0.38)' }}/>
-          <div style={{ fontSize:6.5, color:'#A89272', marginTop:2, letterSpacing:'1px', textTransform:'uppercase' }}>
+            style={{ width:54, height:54, display:'block', border:'1px solid rgba(201,168,76,0.4)' }}/>
+          <div style={{ fontSize:6, color:'#A89272', marginTop:2, letterSpacing:'1px', textTransform:'uppercase' }}>
             Scan to verify
           </div>
         </div>
