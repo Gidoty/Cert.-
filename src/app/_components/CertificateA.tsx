@@ -4,103 +4,94 @@ import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
 import QRCode from 'qrcode';
 
-const BRIGHT_SIG_B64 = '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';
-
 interface CertificateAProps {
   candidateName: string;
   courseName: string;
   dateIssued: string;
   certificateCode: string;
+  studentId?: string;
   divRef?: RefObject<HTMLDivElement>;
 }
 
-// Diagonal "METABRIDGE ACADEMY" watermark
-const Watermark = ({ id }: { id: string }) => (
-  <svg
-    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <pattern id={id} x="0" y="0" width="320" height="130" patternUnits="userSpaceOnUse" patternTransform="rotate(-28)">
-        <text x="10" y="55" fontSize="13" fontFamily="Inter, Arial, sans-serif" fontWeight="700"
-          fill="#1B2A4A" opacity="0.055" letterSpacing="5">
-          METABRIDGE ACADEMY
-        </text>
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill={`url(#${id})`} />
-  </svg>
-);
+const MetabridgeSeal = () => (
+  <svg width="180" height="180" viewBox="0 0 200 200" style={{ display: 'block' }}>
+    {/* Outer rings */}
+    <circle cx="100" cy="100" r="96" fill="none" stroke="#C9A84C" strokeWidth="2.5"/>
+    <circle cx="100" cy="100" r="88" fill="none" stroke="#C9A84C" strokeWidth="0.8"/>
+    <circle cx="100" cy="100" r="80" fill="rgba(201,168,76,0.07)" stroke="#C9A84C" strokeWidth="1.2"/>
 
-// Subtle dot-grid background for the body (tech aesthetic)
-const DotGrid = () => (
-  <svg
-    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <pattern id="dotgrid-a" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
-        <circle cx="14" cy="14" r="1.2" fill="#1B2A4A" opacity="0.08" />
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#dotgrid-a)" />
-  </svg>
-);
+    {/* 24-point starburst rays */}
+    {Array.from({ length: 24 }).map((_, i) => {
+      const angle = (i * 15 * Math.PI) / 180;
+      const x1 = 100 + 76 * Math.cos(angle);
+      const y1 = 100 + 76 * Math.sin(angle);
+      const x2 = 100 + 82 * Math.cos(angle);
+      const y2 = 100 + 82 * Math.sin(angle);
+      return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#C9A84C" strokeWidth="1"/>;
+    })}
 
-// Elaborate circuit-trace corner ornament
-const CircuitCorner = () => (
-  <svg
-    width="160"
-    height="120"
-    viewBox="0 0 160 120"
-    style={{ position: 'absolute', bottom: 8, right: 8, opacity: 0.14, zIndex: 2 }}
-  >
-    <line x1="0" y1="90" x2="80" y2="90" stroke="#29B6D8" strokeWidth="1" />
-    <line x1="80" y1="90" x2="80" y2="35" stroke="#29B6D8" strokeWidth="1" />
-    <line x1="80" y1="35" x2="160" y2="35" stroke="#29B6D8" strokeWidth="1" />
-    <circle cx="80" cy="90" r="4" fill="#29B6D8" />
-    <circle cx="80" cy="35" r="4" fill="#29B6D8" />
-    <line x1="25" y1="120" x2="25" y2="65" stroke="#29B6D8" strokeWidth="1" />
-    <line x1="25" y1="65" x2="120" y2="65" stroke="#29B6D8" strokeWidth="1" />
-    <circle cx="25" cy="65" r="3" fill="#29B6D8" />
-    <circle cx="120" cy="65" r="3" fill="#29B6D8" />
-    <line x1="50" y1="120" x2="50" y2="110" stroke="#C9A84C" strokeWidth="1" />
-    <line x1="50" y1="110" x2="140" y2="110" stroke="#C9A84C" strokeWidth="1" />
-    <circle cx="50" cy="110" r="2.5" fill="#C9A84C" />
-    <circle cx="140" cy="110" r="2.5" fill="#C9A84C" />
-    <line x1="110" y1="0" x2="110" y2="35" stroke="#C9A84C" strokeWidth="1" />
-    <circle cx="110" cy="35" r="2" fill="#C9A84C" />
-  </svg>
-);
-
-const AcademySeal = ({ id }: { id: string }) => (
-  <svg width="84" height="84" viewBox="0 0 84 84" xmlns="http://www.w3.org/2000/svg">
+    {/* Curved text path */}
     <defs>
-      <path id={id} d="M 42,42 m -34,0 a 34,34 0 1,1 68,0 a 34,34 0 1,1 -68,0" />
+      <path id="topArc" d="M100,100 m-70,0 a70,70 0 1,1 140,0"/>
+      <path id="botArc" d="M100,100 m-62,0 a62,62 0 0,0 124,0"/>
     </defs>
-    <circle cx="42" cy="42" r="41" fill="rgba(27,42,74,0.06)" />
-    <circle cx="42" cy="42" r="41" fill="none" stroke="#1B2A4A" strokeWidth="2.5" />
-    <circle cx="42" cy="42" r="36.5" fill="none" stroke="#C9A84C" strokeWidth="1" opacity="0.85" />
-    <text fontSize="6.2" fill="#1B2A4A" fontFamily="Inter, Arial, sans-serif" fontWeight="700" letterSpacing="2.2">
-      <textPath href={`#${id}`} startOffset="3%">METABRIDGE ACADEMY • CERTIFIED •</textPath>
+    <text fontSize="9" fontFamily="Georgia,serif" fill="#1B2A4A" letterSpacing="4.5">
+      <textPath href="#topArc" startOffset="6%">METABRIDGE ACADEMY  ·  PORT HARCOURT  ·  NIGERIA</textPath>
     </text>
-    <circle cx="42" cy="42" r="25" fill="none" stroke="#1B2A4A" strokeWidth="1" />
-    <line x1="42" y1="17" x2="42" y2="21" stroke="#C9A84C" strokeWidth="2" />
-    <line x1="42" y1="63" x2="42" y2="67" stroke="#C9A84C" strokeWidth="2" />
-    <line x1="17" y1="42" x2="21" y2="42" stroke="#C9A84C" strokeWidth="2" />
-    <line x1="63" y1="42" x2="67" y2="42" stroke="#C9A84C" strokeWidth="2" />
-    <polygon points="42,23 52,28.5 52,39.5 42,45 32,39.5 32,28.5" fill="none" stroke="#C9A84C" strokeWidth="1.2" />
-    <text x="42" y="37" textAnchor="middle" fontSize="11" fontFamily="'Playfair Display', serif" fontWeight="700" fill="#1B2A4A">MA</text>
-    <line x1="30" y1="50" x2="54" y2="50" stroke="#C9A84C" strokeWidth="0.8" opacity="0.7" />
-    <text x="42" y="58" textAnchor="middle" fontSize="4.5" fontFamily="Inter, Arial, sans-serif" fill="#1B2A4A" letterSpacing="0.5" fontWeight="600">DIGITAL LITERACY</text>
+    <text fontSize="7.5" fontFamily="Georgia,serif" fill="#C9A84C" letterSpacing="3">
+      <textPath href="#botArc" startOffset="14%">CERTIFICATE OF EXCELLENCE</textPath>
+    </text>
+
+    {/* Inner emblem — 8-pointed star */}
+    <polygon points="100,42 105,62 118,50 113,70 133,65 121,80 140,85 124,95 140,105 121,110 133,125 113,120 118,140 105,128 100,148 95,128 82,140 87,120 67,125 79,110 60,105 76,95 60,85 79,80 67,65 87,70 82,50 95,62"
+      fill="none" stroke="#C9A84C" strokeWidth="1.2" opacity="0.7"/>
+
+    {/* MA monogram */}
+    <text x="100" y="97" textAnchor="middle" fontSize="28" fontFamily="Georgia,serif"
+      fill="#1B2A4A" fontWeight="700" letterSpacing="2">MA</text>
+    <text x="100" y="113" textAnchor="middle" fontSize="7" fontFamily="sans-serif"
+      fill="#C9A84C" letterSpacing="4" fontWeight="600">CERTIFIED</text>
+
+    {/* 4 corner diamonds */}
+    {[[100,28],[172,100],[100,172],[28,100]].map(([cx,cy],i) => (
+      <polygon key={i}
+        points={`${cx},${cy-5} ${cx+5},${cy} ${cx},${cy+5} ${cx-5},${cy}`}
+        fill="#C9A84C"/>
+    ))}
   </svg>
 );
+
+const CornerFleur = ({ rotate }: { rotate: number }) => (
+  <svg width="60" height="60" viewBox="0 0 60 60"
+    style={{ display: 'block', transform: `rotate(${rotate}deg)` }}>
+    <path d="M4,4 L24,4 L4,24 Z" fill="none" stroke="#C9A84C" strokeWidth="1.5"/>
+    <path d="M4,4 L18,4 L4,18 Z" fill="rgba(201,168,76,0.25)"/>
+    <path d="M4,4 Q14,4 14,14" fill="none" stroke="#C9A84C" strokeWidth="0.8"/>
+    <circle cx="4" cy="4" r="2.5" fill="#C9A84C"/>
+    <circle cx="24" cy="4" r="1.2" fill="rgba(201,168,76,0.6)"/>
+    <circle cx="4" cy="24" r="1.2" fill="rgba(201,168,76,0.6)"/>
+  </svg>
+);
+
+const Diamond = ({ size = 8, color = '#C9A84C' }: { size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16"
+    style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}>
+    <polygon points="8,0 16,8 8,16 0,8" fill={color}/>
+  </svg>
+);
+
+const BELT_ACKNOWLEDGMENT: Record<string, string> = {
+  'Green Belt': 'In recognition of foundational excellence, intellectual curiosity, and the commitment to building a future through knowledge.',
+  'Blue Belt': 'In recognition of professional dedication, applied mastery, and the resolve to transform knowledge into meaningful impact.',
+  'Black Belt': 'In recognition of exemplary mastery, outstanding leadership, and an unwavering commitment to excellence in the digital age.',
+};
 
 export default function CertificateA({
   candidateName,
   courseName,
   dateIssued,
   certificateCode,
+  studentId,
   divRef,
 }: CertificateAProps) {
   const [qrDataUrl, setQrDataUrl] = useState('');
@@ -108,369 +99,232 @@ export default function CertificateA({
   useEffect(() => {
     if (!certificateCode) return;
     QRCode.toDataURL(
-      `${window.location.origin}/verify/${certificateCode}`,
-      {
-        margin: 1,
-        width: 100,
-        color: { dark: '#0D1B35', light: '#ECF3F7' },
-      }
-    ).then((url) => setQrDataUrl(url));
+      `https://cert-ashen.vercel.app/verify/${encodeURIComponent(certificateCode)}`,
+      { margin: 1, width: 100, color: { dark: '#1B2A4A', light: '#FEFCF5' } }
+    ).then(setQrDataUrl);
   }, [certificateCode]);
-
-  const HEADER_H = 159;
 
   return (
     <div
       ref={divRef}
       style={{
-        width: 1122,
-        height: 793,
-        backgroundColor: '#ECF3F7',
+        width: 794,
+        height: 1122,
         position: 'relative',
         overflow: 'hidden',
         fontFamily: 'var(--font-inter), Inter, sans-serif',
+        backgroundColor: '#FEFCF5',
+        backgroundImage: `
+          repeating-linear-gradient(45deg,  rgba(201,168,76,0.038) 0px, rgba(201,168,76,0.038) 1px, transparent 1px, transparent 22px),
+          repeating-linear-gradient(-45deg, rgba(201,168,76,0.038) 0px, rgba(201,168,76,0.038) 1px, transparent 1px, transparent 22px)
+        `,
       }}
     >
-      {/* ── Watermark ── */}
-      <Watermark id="wm-a" />
+      {/* Border system */}
+      <div style={{ position:'absolute', inset:12, border:'2.5px solid #C9A84C', pointerEvents:'none', zIndex:6 }}/>
+      <div style={{ position:'absolute', inset:19, border:'0.75px solid rgba(27,42,74,0.22)', pointerEvents:'none', zIndex:6 }}/>
+      <div style={{ position:'absolute', inset:24, border:'0.4px solid rgba(201,168,76,0.3)', pointerEvents:'none', zIndex:6 }}/>
 
-      {/* ── Dot-grid background ── */}
-      <DotGrid />
+      {/* Corner ornaments */}
+      <div style={{ position:'absolute', top:0, left:0, zIndex:9 }}><CornerFleur rotate={0}/></div>
+      <div style={{ position:'absolute', top:0, right:0, zIndex:9 }}><CornerFleur rotate={90}/></div>
+      <div style={{ position:'absolute', bottom:0, right:0, zIndex:9 }}><CornerFleur rotate={180}/></div>
+      <div style={{ position:'absolute', bottom:0, left:0, zIndex:9 }}><CornerFleur rotate={270}/></div>
 
-      {/* ── Gold left accent bar ── */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 10,
-          background: 'linear-gradient(to bottom, #C9A84C, #8B6914)',
-          zIndex: 10,
-        }}
-      />
+      {/* Gold top bar */}
+      <div style={{
+        position:'absolute', top:0, left:0, right:0, height:7,
+        background:'linear-gradient(to right, #E8C96A, #C9A84C 30%, #F4891F 55%, #C9A84C 75%, #E8C96A)',
+        zIndex:10,
+      }}/>
+      {/* Gold bottom bar */}
+      <div style={{
+        position:'absolute', bottom:0, left:0, right:0, height:7,
+        background:'linear-gradient(to right, #E8C96A, #C9A84C 30%, #F4891F 55%, #C9A84C 75%, #E8C96A)',
+        zIndex:10,
+      }}/>
 
-      {/* ── Header band ── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: HEADER_H,
-          background: 'linear-gradient(135deg, #0D1B35 0%, #1B2A4A 60%, #1E4A6B 100%)',
-          zIndex: 3,
-        }}
-      >
-        {/* Subtle cyan sheen on right side */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: '40%',
-            height: '100%',
-            background: 'linear-gradient(to left, rgba(41,182,216,0.08) 0%, transparent 100%)',
-          }}
-        />
+      {/* Header */}
+      <div style={{
+        position:'absolute', top:7, left:0, right:0, height:200,
+        background:'linear-gradient(170deg, #0D1B35 0%, #1B2A4A 55%, #12233E 100%)',
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', zIndex:2,
+      }}>
+        <div style={{
+          position:'absolute', inset:0,
+          background:'radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.15) 0%, transparent 65%)',
+        }}/>
 
-        {/* Gold underline rule at bottom of header */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 10,
-            right: 0,
-            height: 2,
-            background: 'linear-gradient(to right, #C9A84C, #E8C96A, transparent)',
-          }}
-        />
-
-        {/* Header text — centred */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 34,
-              fontWeight: 700,
-              color: '#FFFFFF',
-              letterSpacing: '1px',
-              lineHeight: 1.2,
-            }}
-          >
-            Metabridge Academy
-          </div>
-          <div
-            style={{
-              fontSize: 10,
-              color: 'rgba(255,255,255,0.55)',
-              letterSpacing: '4px',
-              textTransform: 'uppercase',
-              marginTop: 6,
-            }}
-          >
-            Gateway to Digital Literacy
-          </div>
-          <div
-            style={{
-              width: 200,
-              height: 1,
-              background: 'linear-gradient(to right, transparent, #C9A84C, transparent)',
-              margin: '10px 0',
-              opacity: 0.7,
-            }}
-          />
-          {/* Belt badge */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: '#14532D', borderRadius: 2, padding: '4px 14px', marginTop: 6,
-          }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#86EFAC' }} />
-            <span style={{ fontSize: 10, color: '#FFFFFF', fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase' }}>
-              Green Belt — Foundation
-            </span>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#86EFAC' }} />
-          </div>
+        {/* Green Belt badge */}
+        <div style={{
+          position:'absolute', top:18, right:30,
+          backgroundColor:'#166534', border:'1px solid rgba(255,255,255,0.2)',
+          color:'#FFFFFF', fontSize:8, fontWeight:800,
+          letterSpacing:'3px', textTransform:'uppercase', padding:'5px 13px', zIndex:4,
+        }}>
+          Green Belt (Foundation)
         </div>
 
-        {/* Certificate code — top right inside header */}
+        {/* Certificate code */}
         {certificateCode && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 85,
-              right: 24,
-              color: 'rgba(255,255,255,0.75)',
-              fontFamily: 'Courier, monospace',
-              fontSize: 11,
-              letterSpacing: '1px',
-              textAlign: 'right',
-            }}
-          >
+          <div style={{
+            position:'absolute', top:20, left:30,
+            fontSize:7.5, color:'rgba(255,255,255,0.4)', fontFamily:'Courier, monospace',
+            letterSpacing:'1.5px', zIndex:4,
+          }}>
             {certificateCode}
           </div>
         )}
-      </div>
 
-      {/* ── Outer navy border ── */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 7,
-          border: '2.5px solid #1B2A4A',
-          pointerEvents: 'none',
-          zIndex: 6,
-        }}
-      />
-
-      {/* ── Gold mid border ── */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 13,
-          border: '1px solid rgba(201,168,76,0.6)',
-          pointerEvents: 'none',
-          zIndex: 6,
-        }}
-      />
-
-      {/* ── Cyan inner border ── */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 18,
-          border: '1px solid rgba(41,182,216,0.25)',
-          pointerEvents: 'none',
-          zIndex: 6,
-        }}
-      />
-
-      {/* ── Circuit corner decoration ── */}
-      <CircuitCorner />
-
-      {/* ── Body content ── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: HEADER_H,
-          left: 10,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '30px 70px 18px',
-          zIndex: 4,
-        }}
-      >
-        {/* Central text */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 13,
-              color: '#1E6B7A',
-              fontStyle: 'italic',
-              marginBottom: 14,
-              letterSpacing: '0.5px',
-            }}
-          >
-            This is to certify that
-          </div>
-
-          <div
-            style={{
-              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 44,
-              fontWeight: 700,
-              color: '#0D1B35',
-              lineHeight: 1.2,
-              minHeight: 58,
-            }}
-          >
-            {candidateName || ' '}
-          </div>
-
-          {/* Gold rule under name */}
-          <div
-            style={{
-              width: 120,
-              height: 2,
-              background: 'linear-gradient(to right, #C9A84C, #E8C96A, #C9A84C)',
-              margin: '12px auto 14px',
-              borderRadius: 1,
-            }}
-          />
-
-          <div
-            style={{
-              fontSize: 13,
-              color: '#1E6B7A',
-              fontStyle: 'italic',
-              marginBottom: 8,
-            }}
-          >
-            has successfully completed the
-          </div>
-
-          <div
-            style={{
-              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 22,
-              fontWeight: 700,
-              color: '#1B2A4A',
-              marginBottom: 4,
-            }}
-          >
-            {courseName || ' '}
-          </div>
-
-          <div style={{ fontSize: 12, color: '#2B8A9C' }}>
-            training programme conducted by Metabridge Academy
-          </div>
-
-          <div style={{ marginTop: 18 }}>
-            <div style={{ fontSize: 12, color: '#1E6B7A' }}>
-              Issued: {dateIssued || ' '}
-            </div>
-          </div>
+        {/* Decorative divider */}
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10, position:'relative', zIndex:3 }}>
+          <div style={{ width:55, height:0.5, background:'linear-gradient(to right, transparent, rgba(201,168,76,0.6))' }}/>
+          <Diamond size={10} color="#C9A84C"/>
+          <div style={{ width:55, height:0.5, background:'linear-gradient(to left, transparent, rgba(201,168,76,0.6))' }}/>
         </div>
 
-        {/* Signature */}
-        <div
-          style={{
-            width: '100%',
-            borderTop: '1px solid rgba(201,168,76,0.4)',
-            paddingTop: 14,
-            display: 'flex',
-            justifyContent: 'center',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`data:image/png;base64,${BRIGHT_SIG_B64}`}
-              alt=""
-              style={{
-                width: 130,
-                height: 'auto',
-                display: 'block',
-                margin: '0 auto 2px',
-              }}
-            />
-            <div
-              style={{
-                width: 140,
-                borderBottom: '1px solid #1B2A4A',
-                margin: '0 auto 6px',
-              }}
-            />
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#0D1B35' }}>
-              Bright G. O
-            </div>
-            <div style={{ fontSize: 11, color: '#2B8A9C' }}>
-              Lead Instructor, Metabridge Academy
-            </div>
-          </div>
+        <div style={{
+          fontFamily:'var(--font-playfair), "Playfair Display", serif',
+          fontSize:34, fontWeight:700, color:'#FFFFFF', letterSpacing:'2px', lineHeight:1.1, position:'relative', zIndex:3,
+        }}>
+          Metabridge Academy
+        </div>
+        <div style={{
+          fontSize:9, color:'rgba(255,255,255,0.5)', letterSpacing:'5px',
+          textTransform:'uppercase', marginTop:7, position:'relative', zIndex:3,
+        }}>
+          Port Harcourt · Nigeria
+        </div>
+
+        <div style={{ display:'flex', alignItems:'center', gap:8, margin:'10px 0 8px', width:280, position:'relative', zIndex:3 }}>
+          <div style={{ flex:1, height:1, background:'linear-gradient(to right, transparent, #C9A84C)' }}/>
+          <Diamond size={8} color="#F4891F"/>
+          <div style={{ flex:1, height:1, background:'linear-gradient(to left, transparent, #C9A84C)' }}/>
+        </div>
+
+        <div style={{
+          fontSize:10.5, color:'#F4891F', fontWeight:800, letterSpacing:'6px',
+          textTransform:'uppercase', position:'relative', zIndex:3,
+        }}>
+          Certificate of Completion
         </div>
       </div>
 
-      {/* ── ACADEMY SEAL ── */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 20,
-          left: 22,
-          textAlign: 'center',
-          zIndex: 7,
-        }}
-      >
-        <AcademySeal id="seal-a" />
-        <div style={{ fontSize: 8, color: '#2B8A9C', marginTop: 2 }}>
-          Official Seal
-        </div>
-      </div>
+      {/* Body */}
+      <div style={{
+        position:'absolute', top:207, left:0, right:0, bottom:7,
+        display:'flex', flexDirection:'column', alignItems:'center',
+        padding:'30px 60px 20px', zIndex:3,
+      }}>
 
-      {/* ── QR CODE ── */}
-      {qrDataUrl && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 20,
-            right: 22,
-            textAlign: 'center',
-            zIndex: 7,
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={qrDataUrl}
-            alt="Scan to verify"
-            style={{ width: 68, height: 68, display: 'block' }}
-          />
-          <div style={{ fontSize: 8, color: '#2B8A9C', marginTop: 2 }}>
-            Scan to verify
+        {/* Presented to */}
+        <div style={{ fontSize:13, color:'#7A6042', fontStyle:'italic', marginBottom:10, letterSpacing:'0.5px' }}>
+          This is to certify that
+        </div>
+
+        {/* Candidate name */}
+        <div style={{
+          fontFamily:'var(--font-playfair), "Playfair Display", serif',
+          fontSize:46, fontWeight:700, color:'#1B2A4A', lineHeight:1.1, textAlign:'center',
+          minHeight:56,
+        }}>
+          {candidateName || ' '}
+        </div>
+
+        {/* Divider */}
+        <div style={{ display:'flex', alignItems:'center', gap:10, margin:'12px 0' }}>
+          <div style={{ width:60, height:1.5, background:'linear-gradient(to right, transparent, #C9A84C)' }}/>
+          <Diamond size={7} color="#C9A84C"/>
+          <div style={{ width:60, height:1.5, background:'linear-gradient(to left, transparent, #C9A84C)' }}/>
+        </div>
+
+        <div style={{ fontSize:12.5, color:'#7A6042', fontStyle:'italic', marginBottom:6 }}>
+          has successfully completed the
+        </div>
+
+        <div style={{
+          fontFamily:'var(--font-playfair), "Playfair Display", serif',
+          fontSize:23, fontWeight:700, color:'#1B2A4A', marginBottom:4, lineHeight:1.3, textAlign:'center',
+        }}>
+          {courseName || ' '}
+        </div>
+
+        <div style={{ fontSize:11, color:'#8C7654', letterSpacing:'0.3px', marginBottom:14 }}>
+          training programme conducted by Metabridge Academy
+        </div>
+
+        {/* Acknowledgment */}
+        <div style={{
+          fontSize:11.5, color:'#7A6042', fontStyle:'italic', textAlign:'center',
+          maxWidth:520, lineHeight:1.75, marginBottom:18,
+          padding:'12px 20px', borderTop:'0.5px solid rgba(201,168,76,0.4)', borderBottom:'0.5px solid rgba(201,168,76,0.4)',
+        }}>
+          {BELT_ACKNOWLEDGMENT['Green Belt']}
+        </div>
+
+        {/* Issued line */}
+        <div style={{ display:'flex', alignItems:'center', gap:16, fontSize:11, marginBottom:16 }}>
+          <span style={{ color:'#7A6042' }}>
+            Issued:&nbsp;<strong style={{ color:'#1B2A4A' }}>{dateIssued || ' '}</strong>
+          </span>
+          {studentId && (
+            <>
+              <div style={{ width:1, height:14, backgroundColor:'rgba(201,168,76,0.5)' }}/>
+              <span style={{ fontFamily:'Courier, monospace', fontSize:10, color:'#8C7654', letterSpacing:'2px' }}>
+                ID: {studentId}
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Seal centered */}
+        <div style={{ margin:'6px 0 10px' }}>
+          <MetabridgeSeal/>
+        </div>
+
+        {/* Signatures */}
+        <div style={{
+          width:'100%', display:'flex', justifyContent:'space-around', alignItems:'flex-end',
+          paddingTop:10,
+        }}>
+          <div style={{ textAlign:'center' }}>
+            <div style={{
+              fontSize:22, fontFamily:'"Dancing Script", "Brush Script MT", cursive',
+              color:'#1B2A4A', letterSpacing:'1px', marginBottom:4,
+            }}>
+              Gideon Owhonda
+            </div>
+            <div style={{ width:160, height:1, background:'linear-gradient(to right, transparent, #C9A84C, transparent)', margin:'0 auto 6px' }}/>
+            <div style={{ fontSize:11.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Gideon Owhonda</div>
+            <div style={{ fontSize:9.5, color:'#8C7654', marginTop:2 }}>CEO, Metabridge Academy</div>
+          </div>
+
+          <div style={{ paddingBottom:8 }}><Diamond size={8} color="rgba(201,168,76,0.4)"/></div>
+
+          <div style={{ textAlign:'center' }}>
+            <div style={{
+              fontSize:22, fontFamily:'"Dancing Script", "Brush Script MT", cursive',
+              color:'#1B2A4A', letterSpacing:'1px', marginBottom:4,
+            }}>
+              Bright G. Owhonda
+            </div>
+            <div style={{ width:160, height:1, background:'linear-gradient(to right, transparent, #C9A84C, transparent)', margin:'0 auto 6px' }}/>
+            <div style={{ fontSize:11.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Bright G. O</div>
+            <div style={{ fontSize:9.5, color:'#8C7654', marginTop:2 }}>Lead Instructor, Metabridge Academy</div>
           </div>
         </div>
-      )}
+
+        {/* QR code bottom right */}
+        {qrDataUrl && (
+          <div style={{ position:'absolute', bottom:14, right:18, textAlign:'center', zIndex:7 }}>
+            <img src={qrDataUrl} alt="Scan to verify"
+              style={{ width:68, height:68, display:'block', border:'1px solid rgba(201,168,76,0.4)' }}/>
+            <div style={{ fontSize:7, color:'#A89272', marginTop:2, letterSpacing:'1px', textTransform:'uppercase' }}>
+              Scan to verify
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

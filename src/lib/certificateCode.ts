@@ -10,6 +10,12 @@ export async function getNextSerial(): Promise<number> {
   return data ? (data.serial_number as number) + 1 : 1;
 }
 
+export function buildCertificateCode(cohort: string, year: number, serial: number): string {
+  const yy = String(year).slice(-2);
+  const nn = String(serial).padStart(3, '0');
+  return `MA/${cohort}/${nn}/${yy}`;
+}
+
 export async function checkDuplicateCode(code: string): Promise<boolean> {
   const { data } = await supabase
     .from('certificates')

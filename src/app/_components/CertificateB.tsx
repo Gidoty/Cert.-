@@ -4,551 +4,318 @@ import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
 import QRCode from 'qrcode';
 
-const BRIGHT_SIG_B64 = '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';
-const GIDEON_SIG_B64 = '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';
-
 interface CertificateBProps {
   candidateName: string;
   courseName: string;
   dateIssued: string;
   certificateCode: string;
+  studentId?: string;
+  beltLevel?: 'Blue Belt' | 'Black Belt';
   divRef?: RefObject<HTMLDivElement>;
-  beltLevel?: 'blue' | 'black';
 }
 
-// Diagonal "METABRIDGE ACADEMY" watermark
-const Watermark = ({ id }: { id: string }) => (
-  <svg
-    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <pattern id={id} x="0" y="0" width="320" height="130" patternUnits="userSpaceOnUse" patternTransform="rotate(-28)">
-        <text x="10" y="55" fontSize="13" fontFamily="Inter, Arial, sans-serif" fontWeight="700"
-          fill="#1B2A4A" opacity="0.055" letterSpacing="5">
-          METABRIDGE ACADEMY
-        </text>
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill={`url(#${id})`} />
+const MetabridgeSeal = ({ dark }: { dark?: boolean }) => {
+  const ring = dark ? '#C9A84C' : '#1B2A4A';
+  const inner = dark ? 'rgba(201,168,76,0.12)' : 'rgba(27,42,74,0.07)';
+  const text = dark ? '#C9A84C' : '#1B2A4A';
+  const certText = dark ? '#E8C96A' : '#C9A84C';
+  return (
+    <svg width="180" height="180" viewBox="0 0 200 200" style={{ display:'block' }}>
+      <circle cx="100" cy="100" r="96" fill="none" stroke={ring} strokeWidth="2.5"/>
+      <circle cx="100" cy="100" r="88" fill="none" stroke={ring} strokeWidth="0.8"/>
+      <circle cx="100" cy="100" r="80" fill={inner} stroke={ring} strokeWidth="1.2"/>
+      {Array.from({ length: 24 }).map((_, i) => {
+        const angle = (i * 15 * Math.PI) / 180;
+        const x1 = 100 + 76 * Math.cos(angle); const y1 = 100 + 76 * Math.sin(angle);
+        const x2 = 100 + 82 * Math.cos(angle); const y2 = 100 + 82 * Math.sin(angle);
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={ring} strokeWidth="1"/>;
+      })}
+      <defs>
+        <path id="topArcB" d="M100,100 m-70,0 a70,70 0 1,1 140,0"/>
+        <path id="botArcB" d="M100,100 m-62,0 a62,62 0 0,0 124,0"/>
+      </defs>
+      <text fontSize="9" fontFamily="Georgia,serif" fill={text} letterSpacing="4.5">
+        <textPath href="#topArcB" startOffset="6%">METABRIDGE ACADEMY  ·  PORT HARCOURT  ·  NIGERIA</textPath>
+      </text>
+      <text fontSize="7.5" fontFamily="Georgia,serif" fill={certText} letterSpacing="3">
+        <textPath href="#botArcB" startOffset="14%">CERTIFICATE OF EXCELLENCE</textPath>
+      </text>
+      <polygon points="100,42 105,62 118,50 113,70 133,65 121,80 140,85 124,95 140,105 121,110 133,125 113,120 118,140 105,128 100,148 95,128 82,140 87,120 67,125 79,110 60,105 76,95 60,85 79,80 67,65 87,70 82,50 95,62"
+        fill="none" stroke={ring} strokeWidth="1.2" opacity="0.7"/>
+      <text x="100" y="97" textAnchor="middle" fontSize="28" fontFamily="Georgia,serif"
+        fill={text} fontWeight="700" letterSpacing="2">MA</text>
+      <text x="100" y="113" textAnchor="middle" fontSize="7" fontFamily="sans-serif"
+        fill={certText} letterSpacing="4" fontWeight="600">CERTIFIED</text>
+      {[[100,28],[172,100],[100,172],[28,100]].map(([cx,cy],i) => (
+        <polygon key={i} points={`${cx},${cy-5} ${cx+5},${cy} ${cx},${cy+5} ${cx-5},${cy}`} fill={ring}/>
+      ))}
+    </svg>
+  );
+};
+
+const CornerDiamond = ({ flip }: { flip?: string }) => (
+  <svg width="38" height="38" viewBox="0 0 38 38" style={{ display:'block', transform:flip }}>
+    <polygon points="19,2 36,19 19,36 2,19" fill="none" stroke="#C9A84C" strokeWidth="1.5"/>
+    <polygon points="19,7 31,19 19,31 7,19" fill="none" stroke="rgba(201,168,76,0.3)" strokeWidth="0.7"/>
+    <circle cx="19" cy="19" r="2.8" fill="#C9A84C"/>
   </svg>
 );
 
-// Hex-grid background for body — more tech than dots
-const HexGrid = ({ stroke, opacity }: { stroke: string; opacity: number }) => (
-  <svg
-    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <pattern id="hexgrid-b" x="0" y="0" width="40" height="46" patternUnits="userSpaceOnUse">
-        <polygon
-          points="20,2 38,12 38,34 20,44 2,34 2,12"
-          fill="none"
-          stroke={stroke}
-          strokeWidth="0.6"
-          opacity={opacity}
-        />
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#hexgrid-b)" />
+const Diamond = ({ size = 8, color = '#C9A84C' }: { size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16"
+    style={{ display:'inline-block', verticalAlign:'middle', flexShrink:0 }}>
+    <polygon points="8,0 16,8 8,16 0,8" fill={color}/>
   </svg>
 );
 
-// Gold corner node ornament
-const CornerNode = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22">
-    <circle cx="11" cy="11" r="5" fill="#C9A84C" />
-    <circle cx="11" cy="11" r="8" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4" />
-    <line x1="11" y1="0" x2="11" y2="4" stroke="#C9A84C" strokeWidth="1.5" />
-    <line x1="11" y1="18" x2="11" y2="22" stroke="#C9A84C" strokeWidth="1.5" />
-    <line x1="0" y1="11" x2="4" y2="11" stroke="#C9A84C" strokeWidth="1.5" />
-    <line x1="18" y1="11" x2="22" y2="11" stroke="#C9A84C" strokeWidth="1.5" />
-  </svg>
-);
-
-const SmallDiamond = ({ size = 10, color = '#29B6D8' }: { size?: number; color?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 20 20" style={{ display: 'inline-block' }}>
-    <polygon points="10,0 20,10 10,20 0,10" fill={color} />
-  </svg>
-);
-
-const AcademySeal = ({ id }: { id: string }) => (
-  <svg width="84" height="84" viewBox="0 0 84 84" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <path id={id} d="M 42,42 m -34,0 a 34,34 0 1,1 68,0 a 34,34 0 1,1 -68,0" />
-    </defs>
-    <circle cx="42" cy="42" r="41" fill="rgba(27,42,74,0.06)" />
-    <circle cx="42" cy="42" r="41" fill="none" stroke="#1B2A4A" strokeWidth="2.5" />
-    <circle cx="42" cy="42" r="36.5" fill="none" stroke="#C9A84C" strokeWidth="1" opacity="0.85" />
-    <text fontSize="6.2" fill="#1B2A4A" fontFamily="Inter, Arial, sans-serif" fontWeight="700" letterSpacing="2.2">
-      <textPath href={`#${id}`} startOffset="3%">METABRIDGE ACADEMY • CERTIFIED •</textPath>
-    </text>
-    <circle cx="42" cy="42" r="25" fill="none" stroke="#1B2A4A" strokeWidth="1" />
-    <line x1="42" y1="17" x2="42" y2="21" stroke="#C9A84C" strokeWidth="2" />
-    <line x1="42" y1="63" x2="42" y2="67" stroke="#C9A84C" strokeWidth="2" />
-    <line x1="17" y1="42" x2="21" y2="42" stroke="#C9A84C" strokeWidth="2" />
-    <line x1="63" y1="42" x2="67" y2="42" stroke="#C9A84C" strokeWidth="2" />
-    <polygon points="42,23 52,28.5 52,39.5 42,45 32,39.5 32,28.5" fill="none" stroke="#C9A84C" strokeWidth="1.2" />
-    <text x="42" y="37" textAnchor="middle" fontSize="11" fontFamily="'Playfair Display', serif" fontWeight="700" fill="#1B2A4A">MA</text>
-    <line x1="30" y1="50" x2="54" y2="50" stroke="#C9A84C" strokeWidth="0.8" opacity="0.7" />
-    <text x="42" y="58" textAnchor="middle" fontSize="4.5" fontFamily="Inter, Arial, sans-serif" fill="#1B2A4A" letterSpacing="0.5" fontWeight="600">DIGITAL LITERACY</text>
-  </svg>
-);
+const BELT_CONFIG = {
+  'Blue Belt': {
+    label: 'Blue Belt (Professional)',
+    bg: 'linear-gradient(170deg, #0A1A4A 0%, #1B2A4A 55%, #0E1F3A 100%)',
+    badgeBg: '#1e3a8a', badgeBorder: 'rgba(255,255,255,0.22)', badgeText: '#FFFFFF',
+    certTitle: 'Certificate of Achievement',
+    ack: 'In recognition of professional dedication, applied mastery, and the resolve to transform knowledge into meaningful impact.',
+  },
+  'Black Belt': {
+    label: 'Black Belt (Mastery)',
+    bg: 'linear-gradient(170deg, #0A0800 0%, #1A1400 55%, #0D0A00 100%)',
+    badgeBg: '#0D0A00', badgeBorder: 'rgba(201,168,76,0.5)', badgeText: '#C9A84C',
+    certTitle: 'Certificate of Mastery',
+    ack: 'In recognition of exemplary mastery, outstanding leadership, and an unwavering commitment to excellence in the digital age.',
+  },
+};
 
 export default function CertificateB({
   candidateName,
   courseName,
   dateIssued,
   certificateCode,
+  studentId,
+  beltLevel = 'Blue Belt',
   divRef,
-  beltLevel = 'blue',
 }: CertificateBProps) {
   const [qrDataUrl, setQrDataUrl] = useState('');
-
-  const isBlack = beltLevel === 'black';
-
-  // Shared palette for all belt levels — only the badge differs
-  const t = {
-    bg:          '#ECF3F7',
-    qrLight:     '#ECF3F7',
-    qrDark:      '#0D1B35',
-    outerBorder: '3px solid #1B2A4A',
-    midBorder:   '1.5px solid rgba(201,168,76,0.6)',
-    innerBorder: '1px solid rgba(41,182,216,0.2)',
-    headerRule:  'linear-gradient(to right, transparent, #29B6D8, #00D4FF, transparent)',
-    hexStroke:   '#1B2A4A',
-    bodyItalic:  '#1E6B7A',
-    nameColor:   '#0D1B35',
-    goldRule:    'linear-gradient(to right, #C9A84C, #E8C96A, #C9A84C)',
-    courseColor: '#1B2A4A',
-    subText:     '#2B8A9C',
-    dateColor:   '#1E6B7A',
-    sigDivider:  '1px solid rgba(201,168,76,0.4)',
-    sigLine:     '#1B2A4A',
-    sigName:     '#0D1B35',
-    sigRole:     '#2B8A9C',
-    badgeBg:     isBlack ? '#0D0A00' : '#1e3a8a',
-    badgeDot:    isBlack ? '#C9A84C' : '#93C5FD',
-    badgeText:   isBlack ? '#C9A84C' : '#FFFFFF',
-    badgeLabel:  isBlack ? 'Black Belt — Mastery' : 'Blue Belt — Professional',
-    cornerColor: '#C9A84C',
-  };
+  const cfg = BELT_CONFIG[beltLevel];
+  const isBlack = beltLevel === 'Black Belt';
 
   useEffect(() => {
     if (!certificateCode) return;
     QRCode.toDataURL(
-      `${window.location.origin}/verify/${certificateCode}`,
-      {
-        margin: 1,
-        width: 100,
-        color: { dark: t.qrDark, light: t.qrLight },
-      }
-    ).then((url) => setQrDataUrl(url));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [certificateCode, beltLevel]);
-
-  const HEADER_H = 159;
+      `https://cert-ashen.vercel.app/verify/${encodeURIComponent(certificateCode)}`,
+      { margin:1, width:100, color:{ dark:'#1B2A4A', light: isBlack ? '#0D0A00' : '#EEF3F8' } }
+    ).then(setQrDataUrl);
+  }, [certificateCode, isBlack]);
 
   return (
     <div
       ref={divRef}
       style={{
-        width: 1122,
-        height: 793,
-        backgroundColor: t.bg,
-        position: 'relative',
-        overflow: 'hidden',
-        fontFamily: 'var(--font-inter), Inter, sans-serif',
+        width:794, height:1122,
+        position:'relative', overflow:'hidden',
+        fontFamily:'var(--font-inter), Inter, sans-serif',
+        backgroundColor: isBlack ? '#0D0A00' : '#EEF3F8',
+        backgroundImage: isBlack
+          ? 'radial-gradient(circle, rgba(201,168,76,0.05) 1px, transparent 1px)'
+          : 'radial-gradient(circle, rgba(201,168,76,0.07) 1px, transparent 1px)',
+        backgroundSize:'28px 28px',
       }}
     >
-      {/* ── Watermark ── */}
-      <Watermark id="wm-b" />
+      {/* Border system */}
+      <div style={{ position:'absolute', inset:10, border:`2.5px solid ${isBlack ? '#C9A84C' : '#1B2A4A'}`, pointerEvents:'none', zIndex:6 }}/>
+      <div style={{ position:'absolute', inset:17, border:'1.5px solid #C9A84C', pointerEvents:'none', zIndex:6 }}/>
+      <div style={{ position:'absolute', inset:23, border:`0.5px solid ${isBlack ? 'rgba(201,168,76,0.25)' : 'rgba(27,42,74,0.2)'}`, pointerEvents:'none', zIndex:6 }}/>
 
-      {/* ── Hex-grid background ── */}
-      <HexGrid stroke={t.hexStroke} opacity={0.07} />
+      {/* Corner diamonds */}
+      <div style={{ position:'absolute', top:0, left:0, zIndex:9 }}><CornerDiamond/></div>
+      <div style={{ position:'absolute', top:0, right:0, zIndex:9 }}><CornerDiamond flip="scale(-1,1)"/></div>
+      <div style={{ position:'absolute', bottom:0, left:0, zIndex:9 }}><CornerDiamond flip="scale(1,-1)"/></div>
+      <div style={{ position:'absolute', bottom:0, right:0, zIndex:9 }}><CornerDiamond flip="scale(-1,-1)"/></div>
 
-      {/* ── Header band ── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: HEADER_H,
-          background: 'linear-gradient(135deg, #0D1B35 0%, #1B2A4A 55%, #1E4A6B 100%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 3,
-        }}
-      >
-        {/* Cyan sheen right */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: '35%',
-            height: '100%',
-            background: 'linear-gradient(to left, rgba(41,182,216,0.1) 0%, transparent 100%)',
-          }}
-        />
-
-        {/* Bottom header rule */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 2,
-            background: t.headerRule,
-          }}
-        />
-
-        {/* Small node icon above title */}
-        <div style={{ marginBottom: 6 }}>
-          <SmallDiamond size={12} color="#29B6D8" />
-        </div>
-
-        <div
-          style={{
-            fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-            fontSize: 34,
-            fontWeight: 700,
-            color: '#FFFFFF',
-            letterSpacing: '1px',
-            lineHeight: 1.2,
-          }}
-        >
-          Metabridge Academy
-        </div>
-
-        <div
-          style={{
-            fontSize: 10,
-            color: 'rgba(255,255,255,0.5)',
-            letterSpacing: '4px',
-            textTransform: 'uppercase',
-            marginTop: 6,
-          }}
-        >
-          Gateway to Digital Literacy
-        </div>
-
-        {/* Decorative divider with gold diamond */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            margin: '10px 0',
-            width: 260,
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              height: 1,
-              background: 'linear-gradient(to right, transparent, #29B6D8)',
-            }}
-          />
-          <SmallDiamond size={7} color="#C9A84C" />
-          <div
-            style={{
-              flex: 1,
-              height: 1,
-              background: 'linear-gradient(to left, transparent, #29B6D8)',
-            }}
-          />
-        </div>
+      {/* Header */}
+      <div style={{
+        position:'absolute', top:0, left:0, right:0, height:200,
+        background: cfg.bg,
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', zIndex:2,
+      }}>
+        <div style={{
+          position:'absolute', inset:0,
+          background:'radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.15) 0%, transparent 65%)',
+        }}/>
 
         {/* Belt badge */}
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: t.badgeBg, borderRadius: 2, padding: '4px 14px', marginTop: 6,
+          position:'absolute', top:18, right:30,
+          backgroundColor: cfg.badgeBg, border:`1px solid ${cfg.badgeBorder}`,
+          color: cfg.badgeText, fontSize:8, fontWeight:800,
+          letterSpacing:'3px', textTransform:'uppercase', padding:'5px 13px', zIndex:4,
         }}>
-          <div style={{ width: 5, height: 5, borderRadius: '50%', background: t.badgeDot }} />
-          <span style={{ fontSize: 10, color: t.badgeText, fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase' }}>
-            {t.badgeLabel}
-          </span>
-          <div style={{ width: 5, height: 5, borderRadius: '50%', background: t.badgeDot }} />
+          {cfg.label}
         </div>
 
-        {/* Certificate code — top right inside header */}
         {certificateCode && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 93,
-              right: 24,
-              color: 'rgba(255,255,255,0.7)',
-              fontFamily: 'Courier, monospace',
-              fontSize: 11,
-              letterSpacing: '1px',
-              textAlign: 'right',
-            }}
-          >
+          <div style={{
+            position:'absolute', top:20, left:30,
+            fontSize:7.5, color:'rgba(255,255,255,0.4)', fontFamily:'Courier, monospace',
+            letterSpacing:'1.5px', zIndex:4,
+          }}>
             {certificateCode}
           </div>
         )}
+
+        <div style={{ marginBottom:10, position:'relative', zIndex:3 }}>
+          <Diamond size={11} color="#C9A84C"/>
+        </div>
+
+        <div style={{
+          fontFamily:'var(--font-playfair), "Playfair Display", serif',
+          fontSize:34, fontWeight:700, color:'#FFFFFF', letterSpacing:'2px', lineHeight:1.1, position:'relative', zIndex:3,
+        }}>
+          Metabridge Academy
+        </div>
+        <div style={{
+          fontSize:9, color:'rgba(255,255,255,0.5)', letterSpacing:'5px',
+          textTransform:'uppercase', marginTop:7, position:'relative', zIndex:3,
+        }}>
+          Port Harcourt · Nigeria
+        </div>
+
+        <div style={{ display:'flex', alignItems:'center', gap:8, margin:'10px 0 8px', width:280, position:'relative', zIndex:3 }}>
+          <div style={{ flex:1, height:1, background:'linear-gradient(to right, transparent, #C9A84C)' }}/>
+          <Diamond size={8} color="#F4891F"/>
+          <div style={{ flex:1, height:1, background:'linear-gradient(to left, transparent, #C9A84C)' }}/>
+        </div>
+
+        <div style={{
+          fontSize:10.5, color:'#F4891F', fontWeight:800, letterSpacing:'6px',
+          textTransform:'uppercase', position:'relative', zIndex:3,
+        }}>
+          {cfg.certTitle}
+        </div>
       </div>
 
-      {/* ── Outer border ── */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 7,
-          border: t.outerBorder,
-          pointerEvents: 'none',
-          zIndex: 5,
-        }}
-      />
+      {/* Body */}
+      <div style={{
+        position:'absolute', top:200, left:0, right:0, bottom:0,
+        display:'flex', flexDirection:'column', alignItems:'center',
+        padding:'28px 60px 20px', zIndex:3,
+      }}>
+        <div style={{
+          fontSize:13, color: isBlack ? '#8C7A4A' : '#4A5B72',
+          fontStyle:'italic', marginBottom:10, letterSpacing:'0.5px',
+        }}>
+          Awarded to
+        </div>
 
-      {/* ── Mid border ── */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 13,
-          border: t.midBorder,
-          pointerEvents: 'none',
-          zIndex: 5,
-        }}
-      />
+        <div style={{
+          fontFamily:'var(--font-playfair), "Playfair Display", serif',
+          fontSize:46, fontWeight:700, color: isBlack ? '#C9A84C' : '#1B2A4A',
+          lineHeight:1.1, textAlign:'center', minHeight:56,
+        }}>
+          {candidateName || ' '}
+        </div>
 
-      {/* ── Inner border ── */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 19,
-          border: t.innerBorder,
-          pointerEvents: 'none',
-          zIndex: 5,
-        }}
-      />
+        <div style={{ display:'flex', alignItems:'center', gap:10, margin:'12px 0' }}>
+          <div style={{ width:60, height:1.5, background:'linear-gradient(to right, transparent, #C9A84C)' }}/>
+          <Diamond size={7} color="#C9A84C"/>
+          <div style={{ width:60, height:1.5, background:'linear-gradient(to left, transparent, #C9A84C)' }}/>
+        </div>
 
-      {/* ── Corner node ornaments ── */}
-      <div style={{ position: 'absolute', top: -1, left: -1, zIndex: 8 }}>
-        <CornerNode />
-      </div>
-      <div style={{ position: 'absolute', top: -1, right: -1, zIndex: 8 }}>
-        <CornerNode />
-      </div>
-      <div style={{ position: 'absolute', bottom: -1, left: -1, zIndex: 8 }}>
-        <CornerNode />
-      </div>
-      <div style={{ position: 'absolute', bottom: -1, right: -1, zIndex: 8 }}>
-        <CornerNode />
-      </div>
+        <div style={{
+          fontSize:12.5, color: isBlack ? '#8C7A4A' : '#4A5B72',
+          fontStyle:'italic', marginBottom:6,
+        }}>
+          In recognition of dedicated commitment and successful completion of the
+        </div>
 
-      {/* ── Body content ── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: HEADER_H,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '28px 90px 18px',
-          zIndex: 4,
-        }}
-      >
-        {/* Central text */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 13,
-              color: t.bodyItalic,
-              fontStyle: 'italic',
-              marginBottom: 12,
-              letterSpacing: '0.5px',
-            }}
-          >
-            Awarded to
-          </div>
+        <div style={{
+          fontFamily:'var(--font-playfair), "Playfair Display", serif',
+          fontSize:23, fontWeight:700, color: isBlack ? '#E8C96A' : '#1B2A4A',
+          marginBottom:4, lineHeight:1.3, textAlign:'center',
+        }}>
+          {courseName || ' '}
+        </div>
 
-          {/* Candidate name */}
-          <div
-            style={{
-              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 46,
-              fontWeight: 700,
-              color: t.nameColor,
-              lineHeight: 1.2,
-              minHeight: 65,
-            }}
-          >
-            {candidateName || ' '}
-          </div>
+        <div style={{
+          fontSize:11, color: isBlack ? '#7A6A3A' : '#5E7A96',
+          letterSpacing:'0.3px', marginBottom:14,
+        }}>
+          certification programme at Metabridge Academy
+        </div>
 
-          {/* Gold rule under name */}
-          <div
-            style={{
-              width: 150,
-              height: 2,
-              background: t.goldRule,
-              margin: '12px auto 16px',
-              borderRadius: 1,
-            }}
-          />
+        {/* Acknowledgment */}
+        <div style={{
+          fontSize:11.5, color: isBlack ? '#8C7A4A' : '#4A5B72',
+          fontStyle:'italic', textAlign:'center', maxWidth:520, lineHeight:1.75, marginBottom:18,
+          padding:'12px 20px',
+          borderTop:`0.5px solid ${isBlack ? 'rgba(201,168,76,0.3)' : 'rgba(201,168,76,0.4)'}`,
+          borderBottom:`0.5px solid ${isBlack ? 'rgba(201,168,76,0.3)' : 'rgba(201,168,76,0.4)'}`,
+        }}>
+          {cfg.ack}
+        </div>
 
-          <div
-            style={{
-              fontSize: 13,
-              color: t.bodyItalic,
-              fontStyle: 'italic',
-              marginBottom: 8,
-              maxWidth: 560,
-              lineHeight: 1.6,
-            }}
-          >
-            In recognition of dedicated commitment and successful completion of the
-          </div>
+        {/* Issued line */}
+        <div style={{ display:'flex', alignItems:'center', gap:16, fontSize:11, marginBottom:16 }}>
+          <span style={{ color: isBlack ? '#8C7A4A' : '#4A5B72' }}>
+            Issued:&nbsp;<strong style={{ color: isBlack ? '#C9A84C' : '#1B2A4A' }}>{dateIssued || ' '}</strong>
+          </span>
+          {studentId && (
+            <>
+              <div style={{ width:1, height:14, backgroundColor:'rgba(201,168,76,0.5)' }}/>
+              <span style={{ fontFamily:'Courier, monospace', fontSize:10, color: isBlack ? '#7A6A3A' : '#5E7A96', letterSpacing:'2px' }}>
+                ID: {studentId}
+              </span>
+            </>
+          )}
+        </div>
 
-          <div
-            style={{
-              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
-              fontSize: 24,
-              fontWeight: 700,
-              color: t.courseColor,
-              marginBottom: 6,
-            }}
-          >
-            {courseName || ' '}
-          </div>
-
-          <div style={{ fontSize: 12, color: t.subText }}>
-            certification programme at Metabridge Academy
-          </div>
-
-          <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 12, color: t.dateColor }}>
-              Issued: {dateIssued || ' '}
-            </div>
-          </div>
+        {/* Seal */}
+        <div style={{ margin:'4px 0 10px' }}>
+          <MetabridgeSeal dark={isBlack}/>
         </div>
 
         {/* Signatures */}
-        <div
-          style={{
-            width: '100%',
-            borderTop: t.sigDivider,
-            paddingTop: 14,
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'flex-end',
-            justifyContent: 'space-around',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`data:image/png;base64,${GIDEON_SIG_B64}`}
-              alt=""
-              style={{
-                width: 120,
-                height: 'auto',
-                display: 'block',
-                margin: '0 auto 2px',
-              }}
-            />
-            <div
-              style={{
-                width: 140,
-                borderBottom: `1px solid ${t.sigLine}`,
-                margin: '0 auto 6px',
-              }}
-            />
-            <div style={{ fontSize: 13, fontWeight: 600, color: t.sigName }}>
+        <div style={{
+          width:'100%', display:'flex', justifyContent:'space-around', alignItems:'flex-end',
+          paddingTop:10,
+        }}>
+          <div style={{ textAlign:'center' }}>
+            <div style={{
+              fontSize:22, fontFamily:'"Dancing Script", "Brush Script MT", cursive',
+              color: isBlack ? '#C9A84C' : '#1B2A4A', letterSpacing:'1px', marginBottom:4,
+            }}>
               Gideon Owhonda
             </div>
-            <div style={{ fontSize: 11, color: t.sigRole }}>
-              Founder &amp; CEO, Metabridge Academy
-            </div>
+            <div style={{ width:160, height:1, background:'linear-gradient(to right, transparent, #C9A84C, transparent)', margin:'0 auto 6px' }}/>
+            <div style={{ fontSize:11.5, fontWeight:700, color: isBlack ? '#C9A84C' : '#1B2A4A', letterSpacing:'0.3px' }}>Gideon Owhonda</div>
+            <div style={{ fontSize:9.5, color: isBlack ? '#7A6A3A' : '#5E7A96', marginTop:2 }}>CEO, Metabridge Academy</div>
           </div>
 
-          <div style={{ textAlign: 'center' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`data:image/png;base64,${BRIGHT_SIG_B64}`}
-              alt=""
-              style={{
-                width: 120,
-                height: 'auto',
-                display: 'block',
-                margin: '0 auto 2px',
-              }}
-            />
-            <div
-              style={{
-                width: 140,
-                borderBottom: `1px solid ${t.sigLine}`,
-                margin: '0 auto 6px',
-              }}
-            />
-            <div style={{ fontSize: 13, fontWeight: 600, color: t.sigName }}>
-              Bright G. O
+          <div style={{ paddingBottom:8 }}><Diamond size={8} color="rgba(201,168,76,0.4)"/></div>
+
+          <div style={{ textAlign:'center' }}>
+            <div style={{
+              fontSize:22, fontFamily:'"Dancing Script", "Brush Script MT", cursive',
+              color: isBlack ? '#C9A84C' : '#1B2A4A', letterSpacing:'1px', marginBottom:4,
+            }}>
+              Bright G. Owhonda
             </div>
-            <div style={{ fontSize: 11, color: t.sigRole }}>
-              Lead Instructor, Metabridge Academy
-            </div>
+            <div style={{ width:160, height:1, background:'linear-gradient(to right, transparent, #C9A84C, transparent)', margin:'0 auto 6px' }}/>
+            <div style={{ fontSize:11.5, fontWeight:700, color: isBlack ? '#C9A84C' : '#1B2A4A', letterSpacing:'0.3px' }}>Bright G. O</div>
+            <div style={{ fontSize:9.5, color: isBlack ? '#7A6A3A' : '#5E7A96', marginTop:2 }}>Lead Instructor, Metabridge Academy</div>
           </div>
         </div>
+
+        {/* QR code */}
+        {qrDataUrl && (
+          <div style={{ position:'absolute', bottom:14, right:18, textAlign:'center', zIndex:7 }}>
+            <img src={qrDataUrl} alt="Scan to verify"
+              style={{ width:68, height:68, display:'block', border:'1px solid rgba(201,168,76,0.4)' }}/>
+            <div style={{ fontSize:7, color: isBlack ? '#7A6A3A' : '#5E7A96', marginTop:2, letterSpacing:'1px', textTransform:'uppercase' }}>
+              Scan to verify
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* ── ACADEMY SEAL ── */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 22,
-          left: 26,
-          textAlign: 'center',
-          zIndex: 7,
-        }}
-      >
-        <AcademySeal id="seal-b" />
-        <div style={{ fontSize: 8, color: '#2B8A9C', marginTop: 2 }}>
-          Official Seal
-        </div>
-      </div>
-
-      {/* ── QR CODE ── */}
-      {qrDataUrl && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 22,
-            right: 26,
-            textAlign: 'center',
-            zIndex: 7,
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={qrDataUrl}
-            alt="Scan to verify authenticity"
-            style={{ width: 68, height: 68, display: 'block' }}
-          />
-          <div style={{ fontSize: 8, color: '#2B8A9C', marginTop: 2 }}>
-            Scan to verify
-          </div>
-        </div>
-      )}
     </div>
   );
 }
