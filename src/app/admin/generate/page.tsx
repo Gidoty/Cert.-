@@ -395,7 +395,7 @@ export default function GeneratePage() {
                 className="text-gray-500 hover:text-gray-800 text-2xl leading-none">×</button>
             </div>
             <div className="p-4 overflow-auto">
-              <div style={{ transform:'scale(0.65)', transformOrigin:'top left', width:794, height:1122 }}>
+              <div style={{ transform:'scale(0.65)', transformOrigin:'top left', width:794, height:794 }}>
                 <CertificateA {...certProps} beltLevel={beltLevel}/>
               </div>
             </div>

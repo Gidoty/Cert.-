@@ -19,7 +19,7 @@ export async function downloadCertificatePDF(
   });
 
   const imgData = canvas.toDataURL('image/jpeg', 1.0);
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [210, 210] });
+  pdf.addImage(imgData, 'JPEG', 0, 0, 210, 210);
   pdf.save(`Metabridge-Certificate-${code.replace(/\//g, '-')}.pdf`);
 }
