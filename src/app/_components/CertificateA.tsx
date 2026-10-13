@@ -31,9 +31,10 @@ const CERT_TITLE: Record<BeltLevel, string> = {
 const ACK = 'In recognition of demonstrated technical competence, practical excellence, and commitment to building future-ready capabilities through digital technology.';
 
 /**
- * Strips the paper background from a signature photo using canvas pixel thresholding.
- * Light pixels (brightness > 200) become fully transparent; dark ink pixels are kept.
- * Returns a PNG data URL with only the ink visible.
+ * Extracts only the ink from a signature photo.
+ * Samples the four corners to determine the paper's actual background brightness,
+ * then maps every pixel: background → fully transparent, ink → solid navy.
+ * The result is a clean transparent-background PNG — no paper visible.
  */
 function useExtractedSignature(src: string): string {
   const [dataUrl, setDataUrl] = useState('');
@@ -50,18 +51,34 @@ function useExtractedSignature(src: string): string {
       ctx.drawImage(img, 0, 0);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const d = imageData.data;
+      const W = img.width;
+      const H = img.height;
+
+      // Sample corners (avoid edge-pixel noise by sampling 5px in)
+      const cornerIdxs = [
+        (5 * W + 5) * 4,
+        (5 * W + W - 6) * 4,
+        ((H - 6) * W + 5) * 4,
+        ((H - 6) * W + W - 6) * 4,
+      ];
+      let bgSum = 0;
+      for (const idx of cornerIdxs) {
+        bgSum += d[idx] * 0.299 + d[idx + 1] * 0.587 + d[idx + 2] * 0.114;
+      }
+      // Threshold = 88% of background brightness — catches all paper including off-white
+      const threshold = (bgSum / 4) * 0.88;
+
       for (let i = 0; i < d.length; i += 4) {
-        const brightness = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114);
-        if (brightness > 200) {
-          // Paper / background → transparent
-          d[i + 3] = 0;
+        const luma = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+        if (luma >= threshold) {
+          d[i + 3] = 0; // paper → transparent
         } else {
-          // Ink → keep dark, map to navy tone
-          const strength = Math.min(1, (200 - brightness) / 140);
-          d[i]     = Math.round(27  + (d[i]     - 27)  * (1 - strength));
-          d[i + 1] = Math.round(42  + (d[i + 1] - 42)  * (1 - strength));
-          d[i + 2] = Math.round(74  + (d[i + 2] - 74)  * (1 - strength));
-          d[i + 3] = Math.round(255 * strength);
+          // Ink → navy, opacity follows a power curve for clean edges
+          const alpha = Math.min(255, Math.round(255 * Math.pow((threshold - luma) / threshold, 0.6)));
+          d[i]     = 27;  // navy R
+          d[i + 1] = 42;  // navy G
+          d[i + 2] = 74;  // navy B
+          d[i + 3] = alpha;
         }
       }
       ctx.putImageData(imageData, 0, 0);
@@ -266,7 +283,7 @@ export default function CertificateA({
           </div>
 
           <div style={{ fontSize:10.5, color:'#8C7654', letterSpacing:'0.3px', marginBottom:12 }}>
-            training programme with Metabridge Academy
+            programme with Metabridge Academy
           </div>
 
           {/* Acknowledgment */}
