@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import AuthGuard, { clearAdminAuth } from '@/app/_components/AuthGuard';
 import CertificateA from '@/app/_components/CertificateA';
 import CertificateB from '@/app/_components/CertificateB';
