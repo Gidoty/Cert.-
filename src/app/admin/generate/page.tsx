@@ -12,24 +12,30 @@ import {
 import { downloadCertificatePDF } from '@/lib/pdfDownload';
 import { useRouter } from 'next/navigation';
 
-type CertType = 'completion' | 'achievement';
+type BeltLevel = 'Green Belt' | 'Blue Belt' | 'Black Belt';
 
 const COHORTS = [
-  { label: 'Cohort 1', value: 'CO1' },
-  { label: 'Cohort 2', value: 'CO2' },
-  { label: 'Cohort 3', value: 'CO3' },
-  { label: 'Cohort 4', value: 'CO4' },
-  { label: 'Cohort 5', value: 'CO5' },
+  { label: 'Cohort 1', value: 'C1' },
+  { label: 'Cohort 2', value: 'C2' },
+  { label: 'Cohort 3', value: 'C3' },
+  { label: 'Cohort 4', value: 'C4' },
+  { label: 'Cohort 5', value: 'C5' },
 ];
 
-const COURSES: Record<CertType, string[]> = {
-  completion: [
+const COURSES: Record<BeltLevel, string[]> = {
+  'Green Belt': [
     'Cybersecurity Foundations',
     'Data Analytics Foundations',
     'Artificial Intelligence Foundations',
     'Blockchain Fundamentals',
   ],
-  achievement: [
+  'Blue Belt': [
+    'Cybersecurity',
+    'Data Analytics',
+    'Artificial Intelligence',
+    'Blockchain & Cryptocurrency',
+  ],
+  'Black Belt': [
     'Cybersecurity',
     'Data Analytics',
     'Artificial Intelligence',
@@ -48,8 +54,8 @@ export default function GeneratePage() {
   const router = useRouter();
   const certificateRef = useRef<HTMLDivElement>(null);
 
-  const [certType, setCertType] = useState<CertType>('completion');
-  const [cohort, setCohort] = useState('CO1');
+  const [beltLevel, setBeltLevel] = useState<BeltLevel>('Green Belt');
+  const [cohort, setCohort] = useState('C1');
   const [courseName, setCourseName] = useState('');
   const [candidateName, setCandidateName] = useState('');
   const dateIssued = getDateIssued();
@@ -60,16 +66,16 @@ export default function GeneratePage() {
   const [error, setError] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  function handleCertTypeChange(val: CertType) {
-    setCertType(val);
+  function handleBeltChange(val: BeltLevel) {
+    setBeltLevel(val);
     setCourseName('');
     setCertificateCode('');
     setIsGenerated(false);
   }
 
   function handleClearForm() {
-    setCertType('completion');
-    setCohort('CO1');
+    setBeltLevel('Green Belt');
+    setCohort('C1');
     setCourseName('');
     setCandidateName('');
     setCertificateCode('');
@@ -91,20 +97,16 @@ export default function GeneratePage() {
 
     try {
       const year = new Date().getFullYear();
-      const serial = await getNextSerial(cohort);
+      const serial = await getNextSerial();
       const code = buildCertificateCode(cohort, year, serial);
 
       setCertificateCode(code);
 
-      // Wait for the child component's useEffect to generate the QR and re-render
       await new Promise((r) => setTimeout(r, 700));
 
-      // Save to Supabase
       await saveCertificate({
         certificate_code: code,
-        certificate_type: certType === 'completion'
-          ? 'Certificate of Completion'
-          : 'Certificate of Achievement',
+        certificate_type: beltLevel,
         candidate_name: candidateName.trim(),
         course_name: courseName,
         cohort,
@@ -113,7 +115,6 @@ export default function GeneratePage() {
         date_issued: dateIssued,
       });
 
-      // Download PDF
       await downloadCertificatePDF(certificateRef, code);
 
       setIsGenerated(true);
@@ -142,9 +143,11 @@ export default function GeneratePage() {
     certificateCode,
   };
 
+  const isGreen = beltLevel === 'Green Belt';
+
   return (
     <AuthGuard>
-      {/* ── NAV ── */}
+      {/* NAV */}
       <nav className="bg-navy text-white px-6 py-4 flex items-center justify-between shadow-md">
         <div>
           <span
@@ -164,7 +167,7 @@ export default function GeneratePage() {
       </nav>
 
       <main className="min-h-screen bg-gray-50 p-6">
-        {/* ── SUCCESS BANNER ── */}
+        {/* SUCCESS BANNER */}
         {isGenerated && (
           <div className="max-w-3xl mx-auto mb-6 bg-green-50 border border-green-200 rounded-xl p-6 shadow">
             <div className="flex items-center gap-3 mb-3">
@@ -193,26 +196,37 @@ export default function GeneratePage() {
         )}
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* ── LEFT: FORM ── */}
+          {/* LEFT: FORM */}
           <div className="bg-white rounded-xl shadow p-8">
             <h2 className="text-navy font-bold text-2xl mb-6" style={{ fontFamily: 'var(--font-playfair), serif' }}>
               Generate Certificate
             </h2>
 
             <div className="space-y-5">
-              {/* Certificate Type */}
+              {/* Belt Level */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                  Certificate Type
+                  Belt Level
                 </label>
-                <select
-                  value={certType}
-                  onChange={(e) => handleCertTypeChange(e.target.value as CertType)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal bg-white"
-                >
-                  <option value="completion">Certificate of Completion</option>
-                  <option value="achievement">Certificate of Achievement</option>
-                </select>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['Green Belt', 'Blue Belt', 'Black Belt'] as BeltLevel[]).map((lvl) => {
+                    const active = beltLevel === lvl;
+                    const colors: Record<BeltLevel, string> = {
+                      'Green Belt': active ? 'bg-green-700 text-white border-green-700' : 'border-gray-300 text-gray-600 hover:border-green-600',
+                      'Blue Belt':  active ? 'bg-blue-800 text-white border-blue-800'  : 'border-gray-300 text-gray-600 hover:border-blue-700',
+                      'Black Belt': active ? 'bg-gray-900 text-white border-gray-900'  : 'border-gray-300 text-gray-600 hover:border-gray-700',
+                    };
+                    return (
+                      <button
+                        key={lvl}
+                        onClick={() => handleBeltChange(lvl)}
+                        className={`border-2 rounded-lg py-2 text-sm font-bold transition ${colors[lvl]}`}
+                      >
+                        {lvl}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Cohort */}
@@ -244,7 +258,7 @@ export default function GeneratePage() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal bg-white"
                 >
                   <option value="">— Select a course —</option>
-                  {COURSES[certType].map((c) => (
+                  {COURSES[beltLevel].map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -319,7 +333,7 @@ export default function GeneratePage() {
             </div>
           </div>
 
-          {/* ── RIGHT: LIVE PREVIEW ── */}
+          {/* RIGHT: LIVE PREVIEW */}
           <div className="bg-white rounded-xl shadow p-8">
             <h2 className="text-navy font-bold text-2xl mb-4" style={{ fontFamily: 'var(--font-playfair), serif' }}>
               Live Preview
@@ -329,10 +343,10 @@ export default function GeneratePage() {
             <div className="flex justify-center">
               <div className="certificate-preview-wrapper border border-gray-100 rounded shadow-sm">
                 <div className="certificate-preview-scale">
-                  {certType === 'completion' ? (
+                  {isGreen ? (
                     <CertificateA {...certProps} divRef={certificateRef} />
                   ) : (
-                    <CertificateB {...certProps} divRef={certificateRef} />
+                    <CertificateB {...certProps} beltLevel={beltLevel as 'Blue Belt' | 'Black Belt'} divRef={certificateRef} />
                   )}
                 </div>
               </div>
@@ -345,7 +359,7 @@ export default function GeneratePage() {
         </div>
       </main>
 
-      {/* ── PREVIEW MODAL ── */}
+      {/* PREVIEW MODAL */}
       {showPreviewModal && (
         <div
           className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
@@ -366,10 +380,10 @@ export default function GeneratePage() {
             </div>
             <div className="p-4 overflow-auto">
               <div style={{ transform: 'scale(0.7)', transformOrigin: 'top left', width: 1122, height: 793 }}>
-                {certType === 'completion' ? (
+                {isGreen ? (
                   <CertificateA {...certProps} />
                 ) : (
-                  <CertificateB {...certProps} />
+                  <CertificateB {...certProps} beltLevel={beltLevel as 'Blue Belt' | 'Black Belt'} />
                 )}
               </div>
             </div>
