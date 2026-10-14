@@ -262,8 +262,7 @@ export default function CertificateA({
             <div style={{ height:52, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:4 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/signatures/ceo.png" alt="CEO signature"
-                style={{ width:155, height:52, objectFit:'contain', objectPosition:'bottom', display:'block',
-                  mixBlendMode:'multiply', opacity:0.92 }}/>
+                style={{ width:155, height:52, objectFit:'contain', objectPosition:'bottom', display:'block' }}/>
             </div>
             <div style={{ width:158, height:1, background:'linear-gradient(to right, transparent, #C9A84C, transparent)', margin:'0 auto 4px' }}/>
             <div style={{ fontSize:10.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Gideon Owhonda</div>
@@ -280,8 +279,7 @@ export default function CertificateA({
             <div style={{ height:52, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:4 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/signatures/instructor.png" alt="Lead Instructor signature"
-                style={{ width:155, height:52, objectFit:'contain', objectPosition:'bottom', display:'block',
-                  mixBlendMode:'multiply', opacity:0.92 }}/>
+                style={{ width:155, height:52, objectFit:'contain', objectPosition:'bottom', display:'block' }}/>
             </div>
             <div style={{ width:158, height:1, background:'linear-gradient(to right, transparent, #C9A84C, transparent)', margin:'0 auto 4px' }}/>
             <div style={{ fontSize:10.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Bright G.O</div>
