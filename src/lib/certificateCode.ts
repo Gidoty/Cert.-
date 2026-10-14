@@ -13,7 +13,7 @@ export async function getNextSerial(): Promise<number> {
 export function buildCertificateCode(cohort: string, year: number, serial: number): string {
   const yy = String(year).slice(-2);
   const nn = String(serial).padStart(3, '0');
-  return `MA/${cohort}/${nn}/${yy}`;
+  return `MB/${cohort}/${nn}/${yy}`;
 }
 
 export async function checkDuplicateCode(code: string): Promise<boolean> {
