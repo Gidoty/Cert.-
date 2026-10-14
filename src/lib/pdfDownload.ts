@@ -14,8 +14,28 @@ export async function downloadCertificatePDF(
   const canvas = await html2canvas(certificateRef.current, {
     scale: 2,
     useCORS: true,
-    backgroundColor: null,
+    allowTaint: true,
+    backgroundColor: '#FEFCF5',
     logging: false,
+    imageTimeout: 0,
+    foreignObjectRendering: false,
+    onclone: (clonedDoc) => {
+      // Replace SVG elements with their rasterized equivalents to avoid
+      // html2canvas bug where complex SVGs (textPath, defs) create 0×0 canvases
+      const svgs = clonedDoc.querySelectorAll('svg');
+      svgs.forEach((svg) => {
+        const serializer = new XMLSerializer();
+        const svgStr = serializer.serializeToString(svg);
+        const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        const img = clonedDoc.createElement('img');
+        img.src = url;
+        img.width = svg.width?.baseVal?.value || svg.getBoundingClientRect().width || 120;
+        img.height = svg.height?.baseVal?.value || svg.getBoundingClientRect().height || 120;
+        img.style.cssText = svg.style.cssText;
+        svg.parentNode?.replaceChild(img, svg);
+      });
+    },
   });
 
   const imgData = canvas.toDataURL('image/jpeg', 1.0);
