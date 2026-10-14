@@ -61,6 +61,7 @@ export async function POST() {
       }
     }
 
+    const seen = new Set<string>();
     const students = masterData.map(row => {
       const student_id = row[1]?.trim() || '';
       const info = beltMap[student_id] || { belt: '', course: '' };
@@ -73,7 +74,12 @@ export async function POST() {
         course:     info.course,
         synced_at:  new Date().toISOString(),
       };
-    }).filter(s => s.student_id && s.full_name);
+    }).filter(s => {
+      if (!s.student_id || !s.full_name) return false;
+      if (seen.has(s.student_id)) return false;
+      seen.add(s.student_id);
+      return true;
+    });
 
     if (students.length === 0) {
       return NextResponse.json({ error: 'No students found in sheet' }, { status: 400 });
