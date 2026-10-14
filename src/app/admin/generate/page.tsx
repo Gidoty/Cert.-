@@ -91,7 +91,7 @@ export default function GeneratePage() {
       const res = await fetch('/api/students/sync', { method: 'POST' });
       const data = await res.json();
       if (data.synced) setSyncMsg(`✓ ${data.synced} students synced`);
-      else setSyncMsg(`Error: ${data.error}`);
+      else setSyncMsg(`Error: ${typeof data.error === 'string' ? data.error : JSON.stringify(data.error)}`);
     } catch {
       setSyncMsg('Sync failed — check connection');
     } finally {

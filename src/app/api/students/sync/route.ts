@@ -84,11 +84,17 @@ export async function POST() {
       .from('students')
       .upsert(students, { onConflict: 'student_id' });
 
-    if (error) throw error;
+    if (error) {
+      const msg = `${error.message} (code: ${error.code})${error.details ? ' — ' + error.details : ''}`;
+      return NextResponse.json({ error: msg }, { status: 500 });
+    }
 
     return NextResponse.json({ synced: students.length });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    let msg = 'Unknown error';
+    if (err instanceof Error) msg = err.message;
+    else if (err && typeof err === 'object' && 'message' in err) msg = String((err as {message: unknown}).message);
+    else msg = JSON.stringify(err);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
