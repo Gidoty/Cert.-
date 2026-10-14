@@ -81,13 +81,33 @@ export default function GeneratePage() {
   const [error, setError] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  // Load students from sheet
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
+
+  async function syncStudents() {
+    setSyncing(true);
+    setSyncMsg('');
+    try {
+      const res = await fetch('/api/students/sync', { method: 'POST' });
+      const data = await res.json();
+      if (data.synced) setSyncMsg(`✓ ${data.synced} students synced`);
+      else setSyncMsg(`Error: ${data.error}`);
+    } catch {
+      setSyncMsg('Sync failed — check connection');
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  // Load students from sheet and auto-sync to Supabase
   useEffect(() => {
     fetch('/api/students')
       .then(r => r.json())
       .then(d => { if (d.students) setStudents(d.students); })
       .catch(() => {})
       .finally(() => setLoadingStudents(false));
+    // Auto-sync sheet → Supabase on admin page load
+    fetch('/api/students/sync', { method: 'POST' }).catch(() => {});
   }, []);
 
   // Filtered suggestions
@@ -202,6 +222,14 @@ export default function GeneratePage() {
       </nav>
 
       <main className="min-h-screen bg-gray-50 p-6">
+        {/* Sync bar */}
+        <div className="max-w-7xl mx-auto mb-4 flex items-center gap-3">
+          <button onClick={syncStudents} disabled={syncing}
+            className="text-xs bg-white border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition disabled:opacity-50">
+            {syncing ? 'Syncing…' : '⟳ Sync Students from Sheet'}
+          </button>
+          {syncMsg && <span className="text-xs text-gray-500">{syncMsg}</span>}
+        </div>
         {isGenerated && (
           <div className="max-w-3xl mx-auto mb-6 bg-green-50 border border-green-200 rounded-xl p-6 shadow">
             <div className="flex items-center gap-3 mb-3">
