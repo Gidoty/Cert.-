@@ -328,9 +328,19 @@ export default function CertificateA({
           padding: '20px 18px 0 10px',
           position: 'relative',
         }}>
-          {certificateCode && (
+          {studentId && (
             <div style={{ marginTop: 13 }}>
               <div style={{ fontSize: 6, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#888', fontWeight: 600, marginBottom: 3 }}>Certificate ID</div>
+              <div style={{ fontSize: 10, color: '#0D1B2E', fontWeight: 600, letterSpacing: '0.3px', wordBreak: 'break-all' }}>
+                {studentId}
+              </div>
+              <div style={{ width: 20, height: 1.5, background: GOLD, marginTop: 10 }}/>
+            </div>
+          )}
+
+          {certificateCode && (
+            <div style={{ marginTop: 13 }}>
+              <div style={{ fontSize: 6, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#888', fontWeight: 600, marginBottom: 3 }}>Reference No.</div>
               <div style={{ fontSize: 10, color: '#0D1B2E', fontWeight: 600, letterSpacing: '0.3px', wordBreak: 'break-all' }}>
                 {certificateCode}
               </div>
