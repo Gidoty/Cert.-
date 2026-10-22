@@ -19,19 +19,36 @@ export async function downloadCertificatePDF(
     logging: false,
     imageTimeout: 0,
     foreignObjectRendering: false,
-    onclone: (clonedDoc) => {
-      // Replace SVG elements with their rasterized equivalents to avoid
-      // html2canvas bug where complex SVGs (textPath, defs) create 0×0 canvases
-      const svgs = clonedDoc.querySelectorAll('svg');
+    onclone: (_clonedDoc, clonedEl) => {
+      // Replace SVG elements with <img> to avoid html2canvas bugs with
+      // textPath, defs, and SVGs whose size is CSS-only (reads as 0 in clone)
+      const svgs = Array.from(clonedEl.querySelectorAll('svg'));
       svgs.forEach((svg) => {
+        // Resolve width/height: SVG attribute → inline style → viewBox → fallback
+        const attrW = svg.width?.baseVal?.value || 0;
+        const attrH = svg.height?.baseVal?.value || 0;
+        const styleW = parseFloat(svg.style.width) || 0;
+        const styleH = parseFloat(svg.style.height) || 0;
+        const vb = svg.viewBox?.baseVal;
+        const vbW = vb ? vb.width : 0;
+        const vbH = vb ? vb.height : 0;
+        const w = attrW || styleW || vbW || svg.getBoundingClientRect().width || 0;
+        const h = attrH || styleH || vbH || svg.getBoundingClientRect().height || 0;
+
+        if (!w || !h) return; // truly unresolvable — skip to avoid 0×0 canvas crash
+
         const serializer = new XMLSerializer();
-        const svgStr = serializer.serializeToString(svg);
+        // Stamp resolved dimensions onto the SVG string so the browser renders it at full size
+        const svgWithSize = svg.cloneNode(true) as SVGSVGElement;
+        svgWithSize.setAttribute('width', String(w));
+        svgWithSize.setAttribute('height', String(h));
+        const svgStr = serializer.serializeToString(svgWithSize);
         const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(svgBlob);
-        const img = clonedDoc.createElement('img');
+        const img = _clonedDoc.createElement('img');
         img.src = url;
-        img.width = svg.width?.baseVal?.value || svg.getBoundingClientRect().width || 120;
-        img.height = svg.height?.baseVal?.value || svg.getBoundingClientRect().height || 120;
+        img.width = w;
+        img.height = h;
         img.style.cssText = svg.style.cssText;
         svg.parentNode?.replaceChild(img, svg);
       });

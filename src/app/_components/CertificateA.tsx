@@ -60,6 +60,7 @@ export default function CertificateA({
     >
       {/* ── BACKGROUND SVG: panels + gold lines + border ── */}
       <svg
+        width="1123" height="794"
         style={{ position: 'absolute', inset: 0, width: 1123, height: 794, zIndex: 1, pointerEvents: 'none' }}
         viewBox="0 0 1123 794"
       >
@@ -183,11 +184,12 @@ export default function CertificateA({
         zIndex: 5, display: 'flex',
       }}>
         {/* Globe watermark */}
-        <svg style={{
-          position: 'absolute', top: '50%', left: '46%',
-          transform: 'translate(-50%,-50%)', opacity: 0.055,
-          pointerEvents: 'none', width: 310, height: 310, zIndex: 0,
-        }} viewBox="0 0 310 310">
+        <svg width="310" height="310"
+          style={{
+            position: 'absolute', top: '50%', left: '46%',
+            transform: 'translate(-50%,-50%)', opacity: 0.055,
+            pointerEvents: 'none', width: 310, height: 310, zIndex: 0,
+          }} viewBox="0 0 310 310">
           <circle cx="155" cy="155" r="150" fill="none" stroke="#0D1B2E" strokeWidth="1.2"/>
           <ellipse cx="155" cy="155" rx="72" ry="150" fill="none" stroke="#0D1B2E" strokeWidth="0.8"/>
           <ellipse cx="155" cy="155" rx="128" ry="150" fill="none" stroke="#0D1B2E" strokeWidth="0.8"/>
