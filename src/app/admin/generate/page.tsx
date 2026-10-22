@@ -8,6 +8,7 @@ import {
   buildCertificateCode,
   saveCertificate,
 } from '@/lib/certificateCode';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { downloadCertificatePDF } from '@/lib/pdfDownload';
 import { useRouter } from 'next/navigation';
 
@@ -139,32 +140,33 @@ export default function GeneratePage() {
       const code = buildCertificateCode(cohortVal, year, serial);
       setCertificateCode(code);
 
-      // Wait for React to re-render with new code, then for QR code async generation to complete
+      // Wait for React to re-render with new code, then for QR code async generation
       await new Promise(r => setTimeout(r, 1800));
 
-      await saveCertificate({
-        certificate_code: code,
-        certificate_type: beltLevel,
-        candidate_name: candidateName.trim(),
-        course_name: courseName,
-        cohort: cohortVal,
-        serial_number: serial,
-        year_issued: year,
-        date_issued: dateIssued,
-      });
-
+      // Download PDF first — this works even without Supabase
       await downloadCertificatePDF(certificateRef, code);
       setIsGenerated(true);
-    } catch (err) {
-      let msg = 'Unknown error';
-      if (err instanceof Error) {
-        msg = err.message;
-      } else if (err && typeof err === 'object' && 'message' in err) {
-        msg = String((err as { message: unknown }).message);
-        if ('code' in err) msg += ` (code: ${(err as { code: unknown }).code})`;
+
+      // Save to database in background; warn if not configured
+      if (!isSupabaseConfigured) {
+        setError('⚠️ Certificate downloaded but NOT saved — Supabase credentials are not configured in Vercel. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project settings, then redeploy.');
       } else {
-        msg = JSON.stringify(err);
+        saveCertificate({
+          certificate_code: code,
+          certificate_type: beltLevel,
+          candidate_name: candidateName.trim(),
+          course_name: courseName,
+          cohort: cohortVal,
+          serial_number: serial,
+          year_issued: year,
+          date_issued: dateIssued,
+        }).catch(err => {
+          const msg = err instanceof Error ? err.message : JSON.stringify(err);
+          setError(`⚠️ PDF downloaded but failed to save to database: ${msg}`);
+        });
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : JSON.stringify(err);
       setError(`Error: ${msg}`);
     } finally {
       setIsGenerating(false);

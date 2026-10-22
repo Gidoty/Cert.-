@@ -1,12 +1,17 @@
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 export async function getNextSerial(): Promise<number> {
-  const { data } = await supabase
+  if (!isSupabaseConfigured) {
+    // Fallback: use a timestamp-derived serial when Supabase isn't configured
+    return Math.floor(Date.now() / 1000) % 1000 + 1;
+  }
+  const { data, error } = await supabase
     .from('certificates')
     .select('serial_number')
     .order('serial_number', { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (error) throw new Error(`Database error: ${error.message}`);
   return data ? (data.serial_number as number) + 1 : 1;
 }
 
