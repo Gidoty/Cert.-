@@ -27,7 +27,7 @@ const CERT_SUBTITLE: Record<BeltLevel, string> = {
   'Black Belt': 'OF MASTERY',
 };
 
-const ACK = 'This certificate is awarded in recognition of your dedication, active participation and successful completion of the required training, assessments and projects.';
+const ACK = 'In recognition of demonstrated technical competence, practical excellence, and commitment to building future-ready capabilities through digital technology.';
 
 export default function CertificateA({
   candidateName,
@@ -298,8 +298,8 @@ export default function CertificateA({
                   <path id="at" d="M58,58 m-36,0 a36,36 0 1,1 72,0"/>
                   <path id="ab" d="M58,58 m-28,0 a28,28 0 0,0 56,0"/>
                 </defs>
-                <text fontSize="6.2" fontFamily="Inter,sans-serif" fill="rgba(248,248,240,0.88)" letterSpacing="3.2" fontWeight="600">
-                  <textPath href="#at" startOffset="7%">METABRIDGE  ACADEMY</textPath>
+                <text fontSize="6.2" fontFamily="Inter,sans-serif" fill="rgba(248,248,240,0.88)" letterSpacing="1.2" fontWeight="600">
+                  <textPath href="#at" startOffset="4%">METABRIDGE ACADEMY</textPath>
                 </text>
                 <path d="M36,72 C36,60 42,53 48,59 C53,64 53,67 58,67 C63,67 63,64 68,59 C74,53 80,60 80,72"
                   stroke={TEAL} strokeWidth="4.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
@@ -328,11 +328,6 @@ export default function CertificateA({
           padding: '20px 18px 0 10px',
           position: 'relative',
         }}>
-          <div style={{ fontSize: 7, color: '#1A2B4A', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600, lineHeight: 1.8, textAlign: 'right' }}>
-            Global Skills<br/>For A Brighter<br/>Tomorrow
-          </div>
-          <div style={{ width: 24, height: 1.5, background: GOLD, marginLeft: 'auto', marginTop: 6, marginBottom: 4 }}/>
-
           {certificateCode && (
             <div style={{ marginTop: 13 }}>
               <div style={{ fontSize: 6, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#888', fontWeight: 600, marginBottom: 3 }}>Certificate ID</div>
@@ -347,14 +342,6 @@ export default function CertificateA({
             <div style={{ marginTop: 13 }}>
               <div style={{ fontSize: 6, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#888', fontWeight: 600, marginBottom: 3 }}>Date of Completion</div>
               <div style={{ fontSize: 10, color: '#0D1B2E', fontWeight: 600 }}>{dateIssued}</div>
-              <div style={{ width: 20, height: 1.5, background: GOLD, marginTop: 10 }}/>
-            </div>
-          )}
-
-          {studentId && (
-            <div style={{ marginTop: 13 }}>
-              <div style={{ fontSize: 6, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#888', fontWeight: 600, marginBottom: 3 }}>Student ID</div>
-              <div style={{ fontSize: 10, color: '#0D1B2E', fontWeight: 600 }}>{studentId}</div>
               <div style={{ width: 20, height: 1.5, background: GOLD, marginTop: 10 }}/>
             </div>
           )}
