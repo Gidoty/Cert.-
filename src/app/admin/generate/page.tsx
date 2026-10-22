@@ -8,6 +8,7 @@ import {
   buildCertificateCode,
   saveCertificate,
 } from '@/lib/certificateCode';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { downloadCertificatePDF } from '@/lib/pdfDownload';
 import { useRouter } from 'next/navigation';
 
@@ -159,32 +160,33 @@ export default function GeneratePage() {
       const code = buildCertificateCode(cohortVal, year, serial);
       setCertificateCode(code);
 
-      // Wait for React to re-render with new code, then for QR code async generation to complete
+      // Wait for React to re-render with new code, then for QR code async generation
       await new Promise(r => setTimeout(r, 1800));
 
-      await saveCertificate({
-        certificate_code: code,
-        certificate_type: beltLevel,
-        candidate_name: candidateName.trim(),
-        course_name: courseName,
-        cohort: cohortVal,
-        serial_number: serial,
-        year_issued: year,
-        date_issued: dateIssued,
-      });
-
+      // Download PDF first — this works even without Supabase
       await downloadCertificatePDF(certificateRef, code);
       setIsGenerated(true);
-    } catch (err) {
-      let msg = 'Unknown error';
-      if (err instanceof Error) {
-        msg = err.message;
-      } else if (err && typeof err === 'object' && 'message' in err) {
-        msg = String((err as { message: unknown }).message);
-        if ('code' in err) msg += ` (code: ${(err as { code: unknown }).code})`;
+
+      // Save to database in background; warn if not configured
+      if (!isSupabaseConfigured) {
+        setError('⚠️ Certificate downloaded but NOT saved — Supabase credentials are not configured in Vercel. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project settings, then redeploy.');
       } else {
-        msg = JSON.stringify(err);
+        saveCertificate({
+          certificate_code: code,
+          certificate_type: beltLevel,
+          candidate_name: candidateName.trim(),
+          course_name: courseName,
+          cohort: cohortVal,
+          serial_number: serial,
+          year_issued: year,
+          date_issued: dateIssued,
+        }).catch(err => {
+          const msg = err instanceof Error ? err.message : JSON.stringify(err);
+          setError(`⚠️ PDF downloaded but failed to save to database: ${msg}`);
+        });
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : JSON.stringify(err);
       setError(`Error: ${msg}`);
     } finally {
       setIsGenerating(false);
@@ -416,7 +418,7 @@ export default function GeneratePage() {
                 </div>
               </div>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-4">QR code appears after generating · PDF saved as 210×210mm square</p>
+            <p className="text-xs text-gray-400 text-center mt-4">QR code appears after generating · PDF saved as A4 landscape (297×210mm)</p>
           </div>
         </div>
       </main>
@@ -432,9 +434,11 @@ export default function GeneratePage() {
               <button onClick={() => setShowPreviewModal(false)}
                 className="text-gray-500 hover:text-gray-800 text-2xl leading-none">×</button>
             </div>
-            <div className="p-4 overflow-auto">
-              <div style={{ transform:'scale(0.65)', transformOrigin:'top left', width:794, height:794 }}>
-                <CertificateA {...certProps} beltLevel={beltLevel}/>
+            <div className="p-4">
+              <div style={{ width:618, height:437, overflow:'hidden', position:'relative' }}>
+                <div style={{ transform:'scale(0.55)', transformOrigin:'top left', position:'absolute', top:0, left:0 }}>
+                  <CertificateA {...certProps} beltLevel={beltLevel}/>
+                </div>
               </div>
             </div>
           </div>

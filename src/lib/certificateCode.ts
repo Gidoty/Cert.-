@@ -1,13 +1,23 @@
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 export async function getNextSerial(): Promise<number> {
-  const { data } = await supabase
-    .from('certificates')
-    .select('serial_number')
-    .order('serial_number', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return data ? (data.serial_number as number) + 1 : 1;
+  if (!isSupabaseConfigured) {
+    // Fallback: use a timestamp-derived serial when Supabase isn't configured
+    return Math.floor(Date.now() / 1000) % 1000 + 1;
+  }
+  try {
+    const { data, error } = await supabase
+      .from('certificates')
+      .select('serial_number')
+      .order('serial_number', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? (data.serial_number as number) + 1 : 1;
+  } catch {
+    // Supabase unreachable (paused project, network issue) — use timestamp fallback
+    return Math.floor(Date.now() / 1000) % 1000 + 1;
+  }
 }
 
 export function buildCertificateCode(cohort: string, year: number, serial: number): string {

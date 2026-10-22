@@ -8,16 +8,17 @@ export async function downloadCertificatePDF(
 
   await document.fonts.ready;
 
-  const { toPng } = await import('html-to-image');
+  const { toJpeg } = await import('html-to-image');
   const { jsPDF } = await import('jspdf');
 
-  const dataUrl = await toPng(certificateRef.current, {
+  const dataUrl = await toJpeg(certificateRef.current, {
+    quality: 1.0,
     pixelRatio: 2,
-    backgroundColor: '#FEFCF5',
+    backgroundColor: '#F4F5F0',
     skipFonts: false,
   });
 
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [210, 210] });
-  pdf.addImage(dataUrl, 'PNG', 0, 0, 210, 210);
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [297, 210] });
+  pdf.addImage(dataUrl, 'JPEG', 0, 0, 297, 210);
   pdf.save(`Metabridge-Certificate-${code.replace(/\//g, '-')}.pdf`);
 }
