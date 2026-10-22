@@ -284,7 +284,7 @@ export default function CertificateA({
               </div>
               <div style={{ width: 130, height: 1, background: '#1A2B4A', margin: '0 auto 4px' }}/>
               <div style={{ fontSize: 7.5, fontWeight: 700, color: '#0D1B2E', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Gideon Owhonda</div>
-              <div style={{ fontSize: 8, color: '#4A5568', marginTop: 1, fontStyle: 'italic' }}>Founder &amp; Executive Director</div>
+              <div style={{ fontSize: 8, color: '#4A5568', marginTop: 1, fontStyle: 'italic' }}>CEO</div>
               <div style={{ fontSize: 8, color: '#4A5568', fontStyle: 'italic' }}>Metabridge Academy</div>
             </div>
 
