@@ -388,7 +388,7 @@ export default function GeneratePage() {
                 </div>
               </div>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-4">QR code appears after generating · PDF saved as 210×210mm square</p>
+            <p className="text-xs text-gray-400 text-center mt-4">QR code appears after generating · PDF saved as A4 landscape (297×210mm)</p>
           </div>
         </div>
       </main>
@@ -404,9 +404,11 @@ export default function GeneratePage() {
               <button onClick={() => setShowPreviewModal(false)}
                 className="text-gray-500 hover:text-gray-800 text-2xl leading-none">×</button>
             </div>
-            <div className="p-4 overflow-auto">
-              <div style={{ transform:'scale(0.65)', transformOrigin:'top left', width:794, height:794 }}>
-                <CertificateA {...certProps} beltLevel={beltLevel}/>
+            <div className="p-4">
+              <div style={{ width:618, height:437, overflow:'hidden', position:'relative' }}>
+                <div style={{ transform:'scale(0.55)', transformOrigin:'top left', position:'absolute', top:0, left:0 }}>
+                  <CertificateA {...certProps} beltLevel={beltLevel}/>
+                </div>
               </div>
             </div>
           </div>

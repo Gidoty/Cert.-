@@ -15,7 +15,7 @@ export async function downloadCertificatePDF(
     scale: 2,
     useCORS: true,
     allowTaint: true,
-    backgroundColor: '#FEFCF5',
+    backgroundColor: '#F4F5F0',
     logging: false,
     imageTimeout: 0,
     foreignObjectRendering: false,
@@ -39,7 +39,7 @@ export async function downloadCertificatePDF(
   });
 
   const imgData = canvas.toDataURL('image/jpeg', 1.0);
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [210, 210] });
-  pdf.addImage(imgData, 'JPEG', 0, 0, 210, 210);
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [297, 210] });
+  pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
   pdf.save(`Metabridge-Certificate-${code.replace(/\//g, '-')}.pdf`);
 }

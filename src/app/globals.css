@@ -6,17 +6,17 @@ body {
   font-family: var(--font-inter), sans-serif;
 }
 
-/* Certificate preview scaling — square (794×794) scaled to fit panel */
+/* Certificate preview scaling — landscape (1123×794) scaled to fit panel */
 .certificate-preview-wrapper {
-  width: 357px;
-  height: 357px;
+  width: 460px;
+  height: 325px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
 }
 
 .certificate-preview-scale {
-  transform: scale(0.45);
+  transform: scale(0.41);
   transform-origin: top left;
   position: absolute;
   top: 0;
