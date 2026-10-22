@@ -16,7 +16,7 @@ interface CertificateAProps {
   divRef?: RefObject<HTMLDivElement>;
 }
 
-const NAVY  = '#163B6B';   // medium-dark blue (lighter, clearly blue not near-black)
+const NAVY  = '#163B6B';
 const GOLD  = '#C9A84C';
 const TEAL  = '#2BC8D4';
 const CREAM = '#F4F5F0';
@@ -29,6 +29,32 @@ const CERT_SUBTITLE: Record<BeltLevel, string> = {
 
 const ACK = 'In recognition of demonstrated technical competence, practical excellence, and commitment to building future-ready capabilities through digital technology.';
 
+function stripWhiteBackground(src: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(src); return; }
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imageData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        if (r > 230 && g > 230 && b > 230) {
+          d[i + 3] = 0;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(src);
+    img.src = src;
+  });
+}
+
 export default function CertificateA({
   candidateName,
   courseName,
@@ -39,6 +65,7 @@ export default function CertificateA({
   divRef,
 }: CertificateAProps) {
   const [qrDataUrl, setQrDataUrl] = useState('');
+  const [logoDataUrl, setLogoDataUrl] = useState('');
 
   useEffect(() => {
     if (!certificateCode) return;
@@ -47,6 +74,10 @@ export default function CertificateA({
       { margin: 1, width: 90, color: { dark: '#0D1B2E', light: '#FFFFFF' } }
     ).then(setQrDataUrl);
   }, [certificateCode]);
+
+  useEffect(() => {
+    stripWhiteBackground('/logo.png').then(setLogoDataUrl);
+  }, []);
 
   return (
     <div
@@ -67,7 +98,11 @@ export default function CertificateA({
         {/* Left navy panel */}
         <rect x="0" y="0" width="234" height="794" fill={NAVY}/>
 
-        {/* Left panel upper facet — very subtle lighter wash */}
+        {/* Left panel teal geometric highlights */}
+        <polygon points="0,0 234,0 190,90 0,140" fill="rgba(43,200,212,0.11)"/>
+        <polygon points="0,400 110,300 234,360 234,520 0,520" fill="rgba(43,200,212,0.06)"/>
+
+        {/* Left panel upper facet — subtle lighter wash */}
         <polygon points="234,0 234,200 100,340 0,260 0,0" fill="rgba(255,255,255,0.03)"/>
 
         {/* Left panel gold diagonal accent lines */}
@@ -79,6 +114,9 @@ export default function CertificateA({
         {/* Bottom-right dark corner (above footer y=742) */}
         <polygon points="868,742 1123,490 1123,742" fill={NAVY}/>
 
+        {/* Bottom-right teal accent layer */}
+        <polygon points="910,742 1123,545 1123,742" fill="rgba(43,200,212,0.07)"/>
+
         {/* Bottom-right gold accent lines */}
         <line x1="868"  y1="742" x2="1123" y2="490" stroke={GOLD} strokeWidth="1.8"/>
         <line x1="894"  y1="742" x2="1123" y2="514" stroke={GOLD} strokeWidth="0.75" opacity="0.45"/>
@@ -88,24 +126,37 @@ export default function CertificateA({
         <rect x="240" y="8" width="875" height="778" fill="none" stroke={GOLD} strokeWidth="0.6" opacity="0.3"/>
       </svg>
 
-      {/* ── LOGO (on left panel) ── */}
+      {/* ── OFFICIAL LOGO (on left panel, white filter for dark bg) ── */}
       <div style={{
-        position: 'absolute', top: 26, left: 18, zIndex: 8,
-        display: 'flex', alignItems: 'center', gap: 10,
+        position: 'absolute', top: 18, left: 8, zIndex: 8,
+        width: 218, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <svg width="46" height="33" viewBox="0 0 46 33">
-          <path d="M3,26 C3,14 9,6 16,12 C21,17 21,21 23,21 C25,21 25,17 30,12 C37,6 43,14 43,26"
-            stroke={TEAL} strokeWidth="5.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <span style={{ fontFamily: 'var(--font-playfair),"Playfair Display",serif', fontSize: 15, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>Metabridge</span>
-            <span style={{ fontFamily: 'var(--font-playfair),"Playfair Display",serif', fontSize: 15, fontWeight: 300, color: '#FFFFFF', lineHeight: 1.2 }}>Academy</span>
+        {logoDataUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoDataUrl}
+            alt="Metabridge Academy"
+            style={{
+              width: 195,
+              height: 'auto',
+              display: 'block',
+              /* Convert dark logo pixels to white so it's visible on navy */
+              filter: 'brightness(0) invert(1)',
+            }}
+          />
+        ) : (
+          /* Fallback while logo loads */
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <svg width="38" height="28" viewBox="0 0 46 33">
+              <path d="M3,26 C3,14 9,6 16,12 C21,17 21,21 23,21 C25,21 25,17 30,12 C37,6 43,14 43,26"
+                stroke={TEAL} strokeWidth="5.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <div>
+              <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-playfair)', lineHeight: 1.2 }}>Metabridge<br/>Academy</div>
+              <div style={{ color: TEAL, fontSize: 5.5, letterSpacing: '2.5px', textTransform: 'uppercase', marginTop: 3 }}>Gateway to Digital Literacy</div>
+            </div>
           </div>
-          <div style={{ fontSize: 6, color: TEAL, letterSpacing: '3.5px', textTransform: 'uppercase', marginTop: 3 }}>
-            Learn · Build · Grow
-          </div>
-        </div>
+        )}
       </div>
 
       {/* ── FEATURE BULLETS (bottom of left panel) ── */}
@@ -123,13 +174,20 @@ export default function CertificateA({
         ))}
       </div>
 
-      {/* ── MOTTO (over dark bottom-right corner) ── */}
+      {/* ── BRANDING (over dark bottom-right corner) ── */}
       <div style={{
-        position: 'absolute', bottom: 60, right: 16, zIndex: 8,
-        textAlign: 'right', width: 148,
+        position: 'absolute', bottom: 60, right: 14, zIndex: 8,
+        textAlign: 'right', width: 165,
       }}>
-        <div style={{ fontSize: 8.5, color: 'rgba(248,250,252,0.55)', fontStyle: 'italic', lineHeight: 1.7 }}>
-          Empowering People.<br/>Building Solutions.<br/>Creating Opportunities.
+        <div style={{
+          fontSize: 8.5, color: 'rgba(255,255,255,0.80)',
+          fontWeight: 700, letterSpacing: '1.8px', textTransform: 'uppercase', lineHeight: 1.4,
+          fontFamily: 'var(--font-playfair),"Playfair Display",serif',
+        }}>
+          METABRIDGE ACADEMY
+        </div>
+        <div style={{ fontSize: 7.5, color: `rgba(43,200,212,0.85)`, fontStyle: 'italic', marginTop: 3, letterSpacing: '0.5px' }}>
+          Gateway to Digital Literacy
         </div>
       </div>
 
@@ -154,23 +212,18 @@ export default function CertificateA({
         </div>
         <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.2)', margin: '0 14px' }}/>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.7)', fontSize: 8.5 }}>
-          {/* Facebook */}
           <svg width="11" height="11" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)">
             <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
           </svg>
-          {/* LinkedIn */}
           <svg width="11" height="11" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)">
             <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
           </svg>
-          {/* X */}
           <svg width="10" height="10" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
           </svg>
-          {/* Instagram */}
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8">
             <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="rgba(255,255,255,0.7)"/>
           </svg>
-          {/* YouTube */}
           <svg width="13" height="9" viewBox="0 0 28 20" fill="rgba(255,255,255,0.7)">
             <rect width="28" height="20" rx="4"/><polygon points="11,5 11,15 20,10" fill={NAVY}/>
           </svg>
@@ -183,21 +236,24 @@ export default function CertificateA({
         position: 'absolute', top: 0, left: 234, right: 0, bottom: 52,
         zIndex: 5, display: 'flex',
       }}>
-        {/* Globe watermark */}
-        <svg width="310" height="310"
-          style={{
-            position: 'absolute', top: '50%', left: '46%',
-            transform: 'translate(-50%,-50%)', opacity: 0.055,
-            pointerEvents: 'none', width: 310, height: 310, zIndex: 0,
-          }} viewBox="0 0 310 310">
-          <circle cx="155" cy="155" r="150" fill="none" stroke="#0D1B2E" strokeWidth="1.2"/>
-          <ellipse cx="155" cy="155" rx="72" ry="150" fill="none" stroke="#0D1B2E" strokeWidth="0.8"/>
-          <ellipse cx="155" cy="155" rx="128" ry="150" fill="none" stroke="#0D1B2E" strokeWidth="0.8"/>
-          <line x1="5" y1="155" x2="305" y2="155" stroke="#0D1B2E" strokeWidth="0.8"/>
-          <ellipse cx="155" cy="155" rx="150" ry="52" fill="none" stroke="#0D1B2E" strokeWidth="0.6"/>
-          <ellipse cx="155" cy="155" rx="150" ry="105" fill="none" stroke="#0D1B2E" strokeWidth="0.6"/>
-          <line x1="155" y1="5" x2="155" y2="305" stroke="#0D1B2E" strokeWidth="0.6"/>
-        </svg>
+        {/* Official logo watermark at very low opacity */}
+        {logoDataUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoDataUrl}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: '50%', left: '40%',
+              transform: 'translate(-50%, -50%)',
+              width: 340, height: 'auto',
+              opacity: 0.045,
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
+        )}
 
         {/* ── CENTER COLUMN ── */}
         <div style={{
@@ -238,7 +294,7 @@ export default function CertificateA({
             fontFamily: 'var(--font-great-vibes),"Great Vibes",cursive',
             fontSize: 62, color: '#0D1B2E', lineHeight: 1.05, textAlign: 'center',
           }}>
-            {candidateName || ' '}
+            {candidateName || ' '}
           </div>
 
           {/* Name underline */}
@@ -259,7 +315,7 @@ export default function CertificateA({
             fontSize: 24, fontWeight: 700, color: '#0D1B2E',
             textAlign: 'center', lineHeight: 1.2, marginBottom: 2,
           }}>
-            {courseName || ' '}
+            {courseName || ' '}
           </div>
 
           {/* AT METABRIDGE ACADEMY */}
@@ -339,7 +395,6 @@ export default function CertificateA({
               <div style={{ width: 20, height: 1.5, background: GOLD, marginTop: 10 }}/>
             </div>
           )}
-
 
           {dateIssued && (
             <div style={{ marginTop: 13 }}>
