@@ -34,8 +34,8 @@ const ACK = 'In recognition of demonstrated technical competence, practical exce
 const MetabridgeSeal = () => (
   <svg width="120" height="120" viewBox="0 0 200 200" style={{ display: 'block' }}>
     <circle cx="100" cy="100" r="96" fill="none" stroke="#2B8A9C" strokeWidth="2.5"/>
-    <circle cx="100" cy="100" r="88" fill="none" stroke="#2B8A9C" strokeWidth="0.8"/>
-    <circle cx="100" cy="100" r="80" fill="rgba(43,138,156,0.05)" stroke="#2B8A9C" strokeWidth="1.2"/>
+    <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(43,138,156,0.5)" strokeWidth="0.8"/>
+    <circle cx="100" cy="100" r="80" fill="rgba(43,138,156,0.06)" stroke="rgba(43,138,156,0.7)" strokeWidth="1.2"/>
     {Array.from({ length: 24 }).map((_, i) => {
       const a = (i * 15 * Math.PI) / 180;
       return (
@@ -49,18 +49,18 @@ const MetabridgeSeal = () => (
       <path id="sealTop" d="M100,100 m-70,0 a70,70 0 1,1 140,0"/>
       <path id="sealBot" d="M100,100 m-62,0 a62,62 0 0,0 124,0"/>
     </defs>
-    <text fontSize="9" fontFamily="Georgia,serif" fill="#1B2A4A" letterSpacing="4.5">
+    <text fontSize="9" fontFamily="Georgia,serif" fill="rgba(248,250,252,0.85)" letterSpacing="4.5">
       <textPath href="#sealTop" startOffset="6%">METABRIDGE ACADEMY  ·  PORT HARCOURT  ·  NIGERIA</textPath>
     </text>
     <text fontSize="7.5" fontFamily="Georgia,serif" fill="#2B8A9C" letterSpacing="3">
       <textPath href="#sealBot" startOffset="14%">CERTIFICATE OF EXCELLENCE</textPath>
     </text>
     <polygon points="100,42 105,62 118,50 113,70 133,65 121,80 140,85 124,95 140,105 121,110 133,125 113,120 118,140 105,128 100,148 95,128 82,140 87,120 67,125 79,110 60,105 76,95 60,85 79,80 67,65 87,70 82,50 95,62"
-      fill="none" stroke="#2B8A9C" strokeWidth="1.2" opacity="0.6"/>
+      fill="none" stroke="rgba(43,138,156,0.45)" strokeWidth="1.2"/>
     <text x="100" y="97" textAnchor="middle" fontSize="28" fontFamily="Georgia,serif"
-      fill="#1B2A4A" fontWeight="700" letterSpacing="2">MA</text>
+      fill="#F4891F" fontWeight="700" letterSpacing="2">MA</text>
     <text x="100" y="113" textAnchor="middle" fontSize="7" fontFamily="sans-serif"
-      fill="#2B8A9C" letterSpacing="4" fontWeight="600">CERTIFIED</text>
+      fill="rgba(248,250,252,0.6)" letterSpacing="4" fontWeight="600">CERTIFIED</text>
     {([[100,28],[172,100],[100,172],[28,100]] as [number,number][]).map(([cx,cy],i) => (
       <polygon key={i} points={`${cx},${cy-5} ${cx+5},${cy} ${cx},${cy+5} ${cx-5},${cy}`} fill="#F4891F"/>
     ))}
@@ -89,7 +89,7 @@ export default function CertificateA({
     if (!certificateCode) return;
     QRCode.toDataURL(
       `https://cert-ashen.vercel.app/verify/${encodeURIComponent(certificateCode)}`,
-      { margin: 1, width: 90, color: { dark: '#1B2A4A', light: '#F8FAFC' } }
+      { margin: 1, width: 90, color: { dark: '#F8FAFC', light: '#0F1E35' } }
     ).then(setQrDataUrl);
   }, [certificateCode]);
 
@@ -102,15 +102,18 @@ export default function CertificateA({
         position: 'relative',
         overflow: 'hidden',
         fontFamily: 'var(--font-inter), Inter, sans-serif',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: '#0F1E35',
         backgroundImage: `
-          repeating-linear-gradient(45deg,  rgba(43,138,156,0.03) 0px, rgba(43,138,156,0.03) 1px, transparent 1px, transparent 22px),
-          repeating-linear-gradient(-45deg, rgba(43,138,156,0.03) 0px, rgba(43,138,156,0.03) 1px, transparent 1px, transparent 22px)
+          radial-gradient(ellipse at 50% 45%, rgba(43,138,156,0.09) 0%, transparent 65%),
+          repeating-linear-gradient(45deg,  rgba(43,138,156,0.025) 0px, rgba(43,138,156,0.025) 1px, transparent 1px, transparent 26px),
+          repeating-linear-gradient(-45deg, rgba(43,138,156,0.025) 0px, rgba(43,138,156,0.025) 1px, transparent 1px, transparent 26px)
         `,
       }}
     >
-      {/* Single clean teal border */}
-      <div style={{ position:'absolute', inset:10, border:'1.5px solid #2B8A9C', pointerEvents:'none', zIndex:6 }}/>
+      {/* Outer subtle border */}
+      <div style={{ position:'absolute', inset:8, border:'1px solid rgba(248,250,252,0.08)', pointerEvents:'none', zIndex:6 }}/>
+      {/* Inner teal border */}
+      <div style={{ position:'absolute', inset:13, border:'1px solid rgba(43,138,156,0.35)', pointerEvents:'none', zIndex:6 }}/>
 
       {/* Navy-to-teal top bar */}
       <div style={{
@@ -128,8 +131,8 @@ export default function CertificateA({
       {/* Certificate code top-left (subtle) */}
       {certificateCode && (
         <div style={{
-          position:'absolute', top:20, left:24,
-          fontSize:7, color:'rgba(27,42,74,0.3)', fontFamily:'Courier, monospace',
+          position:'absolute', top:22, left:26,
+          fontSize:7, color:'rgba(248,250,252,0.2)', fontFamily:'Courier, monospace',
           letterSpacing:'1.5px', zIndex:4,
         }}>
           {certificateCode}
@@ -147,21 +150,21 @@ export default function CertificateA({
         {/* Academy name header */}
         <div style={{ textAlign:'center', marginBottom:4 }}>
           <div style={{ display:'flex', alignItems:'center', gap:10, justifyContent:'center', marginBottom:6 }}>
-            <div style={{ width:50, height:0.5, background:'linear-gradient(to right, transparent, #2B8A9C)' }}/>
-            <Diamond size={10} color="#2B8A9C"/>
-            <div style={{ width:50, height:0.5, background:'linear-gradient(to left, transparent, #2B8A9C)' }}/>
+            <div style={{ width:50, height:0.5, background:'linear-gradient(to right, transparent, rgba(248,250,252,0.25))' }}/>
+            <Diamond size={10} color="#F4891F"/>
+            <div style={{ width:50, height:0.5, background:'linear-gradient(to left, transparent, rgba(248,250,252,0.25))' }}/>
           </div>
           <div style={{
             fontFamily:'var(--font-playfair), "Playfair Display", serif',
-            fontSize:27, fontWeight:700, color:'#1B2A4A', letterSpacing:'2px', lineHeight:1.1,
+            fontSize:27, fontWeight:700, color:'#F8FAFC', letterSpacing:'2px', lineHeight:1.1,
           }}>
             Metabridge Academy
           </div>
 
           <div style={{ display:'flex', alignItems:'center', gap:8, margin:'8px auto', width:240 }}>
-            <div style={{ flex:1, height:1, background:'linear-gradient(to right, transparent, #2B8A9C)' }}/>
+            <div style={{ flex:1, height:1, background:'linear-gradient(to right, transparent, rgba(248,250,252,0.2))' }}/>
             <Diamond size={7} color="#F4891F"/>
-            <div style={{ flex:1, height:1, background:'linear-gradient(to left, transparent, #2B8A9C)' }}/>
+            <div style={{ flex:1, height:1, background:'linear-gradient(to left, transparent, rgba(248,250,252,0.2))' }}/>
           </div>
 
           <div style={{
@@ -172,10 +175,10 @@ export default function CertificateA({
           </div>
         </div>
 
-        {/* Full-width teal rule */}
+        {/* Full-width rule */}
         <div style={{
           width:'100%', height:1,
-          background:'linear-gradient(to right, transparent, rgba(43,138,156,0.5), rgba(43,138,156,0.7), rgba(43,138,156,0.5), transparent)',
+          background:'linear-gradient(to right, transparent, rgba(43,138,156,0.4), rgba(43,138,156,0.6), rgba(43,138,156,0.4), transparent)',
           margin:'10px 0 12px',
         }}/>
 
@@ -185,30 +188,30 @@ export default function CertificateA({
           alignItems:'center', justifyContent:'center', textAlign:'center',
           width:'100%',
         }}>
-          <div style={{ fontSize:12, color:'#2B8A9C', fontStyle:'italic', marginBottom:8, letterSpacing:'0.5px' }}>
+          <div style={{ fontSize:12, color:'rgba(248,250,252,0.55)', fontStyle:'italic', marginBottom:8, letterSpacing:'0.5px' }}>
             This is to certify that
           </div>
 
           <div style={{
             fontFamily:'var(--font-playfair), "Playfair Display", serif',
-            fontSize:40, fontWeight:700, color:'#1B2A4A', lineHeight:1.12, minHeight:48,
+            fontSize:40, fontWeight:700, color:'#F8FAFC', lineHeight:1.12, minHeight:48,
           }}>
             {candidateName || ' '}
           </div>
 
           <div style={{ display:'flex', alignItems:'center', gap:12, margin:'8px 0 10px' }}>
-            <div style={{ width:60, height:1.5, background:'linear-gradient(to right, transparent, #2B8A9C)' }}/>
-            <Diamond size={7} color="#2B8A9C"/>
-            <div style={{ width:60, height:1.5, background:'linear-gradient(to left, transparent, #2B8A9C)' }}/>
+            <div style={{ width:60, height:1.5, background:'linear-gradient(to right, transparent, rgba(248,250,252,0.25))' }}/>
+            <Diamond size={7} color="#F4891F"/>
+            <div style={{ width:60, height:1.5, background:'linear-gradient(to left, transparent, rgba(248,250,252,0.25))' }}/>
           </div>
 
-          <div style={{ fontSize:12, color:'#2B8A9C', fontStyle:'italic', marginBottom:5 }}>
+          <div style={{ fontSize:12, color:'rgba(248,250,252,0.55)', fontStyle:'italic', marginBottom:5 }}>
             has successfully completed the
           </div>
 
           <div style={{
             fontFamily:'var(--font-playfair), "Playfair Display", serif',
-            fontSize:20, fontWeight:700, color:'#1B2A4A', lineHeight:1.3,
+            fontSize:20, fontWeight:700, color:'#F4891F', lineHeight:1.3,
           }}>
             {courseName || ' '}
           </div>
@@ -221,30 +224,30 @@ export default function CertificateA({
             {BELT_LABEL[beltLevel]}
           </div>
 
-          <div style={{ fontSize:10.5, color:'#4A6070', letterSpacing:'0.3px', marginBottom:12 }}>
+          <div style={{ fontSize:10.5, color:'rgba(248,250,252,0.4)', letterSpacing:'0.3px', marginBottom:12 }}>
             programme with Metabridge Academy
           </div>
 
           {/* Acknowledgment */}
           <div style={{
-            fontSize:10.5, color:'#4A6070', fontStyle:'italic', textAlign:'center',
+            fontSize:10.5, color:'rgba(248,250,252,0.5)', fontStyle:'italic', textAlign:'center',
             maxWidth:500, lineHeight:1.7, marginBottom:12,
             padding:'9px 16px',
-            borderTop:'0.5px solid rgba(43,138,156,0.4)',
-            borderBottom:'0.5px solid rgba(43,138,156,0.4)',
+            borderTop:'0.5px solid rgba(248,250,252,0.1)',
+            borderBottom:'0.5px solid rgba(248,250,252,0.1)',
           }}>
             {ACK}
           </div>
 
           {/* Issued line */}
           <div style={{ display:'flex', alignItems:'center', gap:14, fontSize:10.5 }}>
-            <span style={{ color:'#4A6070' }}>
-              Issued:&nbsp;<strong style={{ color:'#1B2A4A' }}>{dateIssued || ' '}</strong>
+            <span style={{ color:'rgba(248,250,252,0.5)' }}>
+              Issued:&nbsp;<strong style={{ color:'#F8FAFC' }}>{dateIssued || ' '}</strong>
             </span>
             {studentId && (
               <>
-                <div style={{ width:1, height:12, backgroundColor:'rgba(43,138,156,0.5)' }}/>
-                <span style={{ fontFamily:'Courier, monospace', fontSize:9.5, color:'#4A6070', letterSpacing:'2px' }}>
+                <div style={{ width:1, height:12, backgroundColor:'rgba(248,250,252,0.2)' }}/>
+                <span style={{ fontFamily:'Courier, monospace', fontSize:9.5, color:'rgba(248,250,252,0.45)', letterSpacing:'2px' }}>
                   ID: {studentId}
                 </span>
               </>
@@ -262,11 +265,11 @@ export default function CertificateA({
             <div style={{ height:52, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:4 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/signatures/ceo.png" alt="CEO signature"
-                style={{ width:155, height:52, objectFit:'contain', objectPosition:'bottom', display:'block' }}/>
+                style={{ width:155, height:52, objectFit:'contain', objectPosition:'bottom', display:'block', filter:'brightness(0) invert(1)', opacity:0.85 }}/>
             </div>
-            <div style={{ width:158, height:1, background:'linear-gradient(to right, transparent, #2B8A9C, transparent)', margin:'0 auto 4px' }}/>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Gideon Owhonda</div>
-            <div style={{ fontSize:8.5, color:'#4A6070', marginTop:1 }}>CEO, Metabridge Academy</div>
+            <div style={{ width:158, height:1, background:'linear-gradient(to right, transparent, rgba(248,250,252,0.3), transparent)', margin:'0 auto 4px' }}/>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#F8FAFC', letterSpacing:'0.3px' }}>Gideon Owhonda</div>
+            <div style={{ fontSize:8.5, color:'rgba(248,250,252,0.45)', marginTop:1 }}>CEO, Metabridge Academy</div>
           </div>
 
           {/* Centre seal */}
@@ -279,11 +282,11 @@ export default function CertificateA({
             <div style={{ height:52, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:4 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/signatures/instructor.png" alt="Lead Instructor signature"
-                style={{ width:155, height:52, objectFit:'contain', objectPosition:'bottom', display:'block' }}/>
+                style={{ width:155, height:52, objectFit:'contain', objectPosition:'bottom', display:'block', filter:'brightness(0) invert(1)', opacity:0.85 }}/>
             </div>
-            <div style={{ width:158, height:1, background:'linear-gradient(to right, transparent, #2B8A9C, transparent)', margin:'0 auto 4px' }}/>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'#1B2A4A', letterSpacing:'0.3px' }}>Bright G.O</div>
-            <div style={{ fontSize:8.5, color:'#4A6070', marginTop:1 }}>Lead Instructor, Metabridge Academy</div>
+            <div style={{ width:158, height:1, background:'linear-gradient(to right, transparent, rgba(248,250,252,0.3), transparent)', margin:'0 auto 4px' }}/>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#F8FAFC', letterSpacing:'0.3px' }}>Bright G.O</div>
+            <div style={{ fontSize:8.5, color:'rgba(248,250,252,0.45)', marginTop:1 }}>Lead Instructor, Metabridge Academy</div>
           </div>
         </div>
       </div>
@@ -292,8 +295,8 @@ export default function CertificateA({
       {qrDataUrl && (
         <div style={{ position:'absolute', bottom:16, right:22, textAlign:'center', zIndex:8 }}>
           <img src={qrDataUrl} alt="Scan to verify"
-            style={{ width:54, height:54, display:'block', border:'1px solid rgba(43,138,156,0.4)' }}/>
-          <div style={{ fontSize:6, color:'#2B8A9C', marginTop:2, letterSpacing:'1px', textTransform:'uppercase' }}>
+            style={{ width:54, height:54, display:'block', border:'1px solid rgba(248,250,252,0.15)', borderRadius:2 }}/>
+          <div style={{ fontSize:6, color:'rgba(248,250,252,0.4)', marginTop:2, letterSpacing:'1px', textTransform:'uppercase' }}>
             Scan to verify
           </div>
         </div>
